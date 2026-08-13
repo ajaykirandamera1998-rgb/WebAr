@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>90s Cafe WebAR - Meme Maharaja</title>
+
+  <!-- Suppress benign console warnings -->
+  <script>
+    (function() {
+      const origWarn = console.warn;
+      console.warn = function(...args) {
+        if (typeof args[0] === 'string' && args[0].includes('markersAreaEnabled')) {
+          return;
+        }
+        origWarn.apply(console, args);
+      };
+    })();
+  </script>
+
+  <!-- A-Frame and AR.js Libraries -->
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+
+  <!-- Register Custom A-Frame Components BEFORE <a-scene> parses -->
+  <script>
+    AFRAME.registerComponent('video-switcher', {
+      schema: { target: { type: 'selector' } },
+      init: function () {
+        const el = this.el;
+        const targetVideo = this.data.target;
+        const mainDisplay = document.querySelector('#main-screen');
+
+        el.addEventListener('click', function () {
+          document.querySelectorAll('video').forEach(v => v.pause());
+          mainDisplay.setAttribute('src', `#${targetVideo.id}`);
+          targetVideo.muted = false;
+          targetVideo.currentTime = 0;
+          targetVideo.play();
+        });
+      }
+    });
+    /*
+      NOTE: The Cloudinary fetch-interceptor for .iset/.fset/.fset3 has been
+      removed. AR.js's NFT loader uses XMLHttpRequest internally, not fetch,
+      so that interceptor never actually caught the marker requests. It also
+      can't work in principle here: Cloudinary gave each of the three marker
+      files a different random suffix, but AR.js requires all three to share
+      one identical base filename. Simplest fix: host the three marker files
+      locally, next to this HTML file, with their original matching names.
+    */
+  </script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    /*
+      FIX: previously z-index: -2, which rendered the camera feed BEHIND
+      the body's own black background paint layer -- i.e. fully hidden.
+      z-index: 0 keeps it in front of the page background but still behind
+      the WebGL canvas (z-index: 1) below.
+    */
+    #arjs-video {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: 0 !important;
+    }
+
+    canvas.a-canvas {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 1 !important;
+      background: transparent !important;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      cursor: pointer;
+    }
+
+    #overlay button {
+      padding: 15px 32px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+      background: #00ffcc;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0, 255, 204, 0.5);
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .arjs-loader {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .arjs-loader div {
+      text-align: center;
+      font-size: 1.2em;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="arjs-loader" id="loader">
+    <div>Loading MemeVerse Target...<br>Point camera at poster once ready.</div>
+  </div>
+
+  <div id="overlay">
+    <h2>Tap to Start WebAR Experience</h2>
+    <button id="start-btn">ENABLE AR & AUDIO</button>
+  </div>
+
+  <a-scene
+    vr-mode-ui="enabled: false;"
+    renderer="logarithmicDepthBuffer: true; precision: medium; colorManagement: true; alpha: true;"
+    embedded
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+
+    <a-assets timeout="30000">
+      <video id="video-main" src="https://res.cloudinary.com/fh1d3uke/video/upload/v1786630870/Video3_iwyh99.mp4" preload="metadata" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+      <video id="video-sub1" src="https://res.cloudinary.com/fh1d3uke/video/upload/v1786630869/video1_dpdhlo.mp4" preload="metadata" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+      <video id="video-sub2" src="https://res.cloudinary.com/fh1d3uke/video/upload/v1786630869/video1_dpdhlo.mp4" preload="metadata" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+      <video id="video-sub3" src="https://res.cloudinary.com/fh1d3uke/video/upload/v1786630984/Video4_dg6ihg.mp4" preload="metadata" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+    </a-assets>
+
+    <a-entity camera raycaster="objects: .clickable" cursor="rayOrigin: mouse"></a-entity>
+
+    <!--
+      FIX: url now points to the LOCAL marker files (same folder as this
+      HTML, on Netlify). Upload memeverse_target_800.fset / .fset3 / .iset
+      alongside this file, unrenamed.
+    -->
+    <a-nft
+      type="nft"
+      url="./memeverse_target_800"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance=".01"
+      smoothThreshold="5"
+      id="nft-target">
+
+      <a-entity id="ar-layout" position="100 0 -150" rotation="-90 0 0">
+        <a-plane position="0 0 0" width="180" height="230" color="#111111" opacity="0.85" material="side: double">
+          <a-video id="main-screen" src="#video-main" width="160" height="90" position="0 55 2"></a-video>
+          <a-video id="sub-screen-1" class="clickable" src="#video-sub1" width="48" height="55" position="-53 -25 2" video-switcher="target: #video-sub1"></a-video>
+          <a-video id="sub-screen-2" class="clickable" src="#video-sub2" width="48" height="55" position="0 -25 2" video-switcher="target: #video-sub2"></a-video>
+          <a-video id="sub-screen-3" class="clickable" src="#video-sub3" width="48" height="55" position="53 -25 2" video-switcher="target: #video-sub3"></a-video>
+          <a-text value="90s Cafe" color="#00FFCC" align="right" width="120" position="80 -98 2"></a-text>
+        </a-plane>
+      </a-entity>
+    </a-nft>
+
+  </a-scene>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const loader = document.getElementById('loader');
+    const videos = document.querySelectorAll('video');
+
+    overlay.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      videos.forEach(video => {
+        video.muted = false;
+        video.play().then(() => {
+          video.pause();
+        }).catch(err => console.log('Autoplay permissions handled:', err));
+      });
+    });
+
+    window.addEventListener('arjs-nft-loaded', () => {
+      if (loader) loader.style.display = 'none';
+    });
+
+    const nftMarker = document.querySelector('#nft-target');
+    const mainVideo = document.querySelector('#video-main');
+
+    nftMarker.addEventListener('markerFound', () => {
+      if (loader) loader.style.display = 'none';
+      mainVideo.muted = false;
+      mainVideo.play();
+    });
+
+    nftMarker.addEventListener('markerLost', () => {
+      videos.forEach(v => v.pause());
+    });
+  </script>
+</body>
+</html>
