@@ -55,23 +55,16 @@
       font-family: Arial, sans-serif;
     }
 
-    .arjs-video {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
-      z-index: 0 !important;
-    }
-
-    canvas.a-canvas {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      z-index: 1 !important;
-      background: transparent !important;
-    }
+    /*
+      Removed: forced position/z-index !important rules on .arjs-video and
+      canvas.a-canvas. On several Android Chrome + GPU combos, forcing the
+      camera video and WebGL canvas into manual absolute layers like this
+      breaks hardware video compositing -- the camera is still capturing
+      (visible in the OS app-switcher thumbnail) but never paints on
+      screen while the tab is in the foreground. AR.js's own default
+      injected styles already position these elements correctly, so we
+      leave them alone here.
+    */
 
     #overlay {
       position: fixed;
