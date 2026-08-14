@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>90s Cafe WebAR - Meme Maharaja</title>
 
   <!-- Suppress benign console warnings -->
@@ -58,7 +55,6 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Fixed z-index so camera feed stays in front of dark background */
     .arjs-video {
       position: absolute !important;
       top: 0 !important;
@@ -136,137 +132,140 @@
     </div>
   </div>
 
-  <div id="overlay">
-    <h2>Tap to Start WebAR Experience</h2>
-    <button id="start-btn">ENABLE AR & AUDIO</button>
-  </div>
+  <main id="app-root">
+    <div id="overlay">
+      <h2>Tap to Start WebAR Experience</h2>
+      <button id="start-btn">ENABLE AR & AUDIO</button>
+    </div>
 
-  <a-scene
-    vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; precision: medium; colorManagement: true; alpha: true;"
-    embedded
-    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
-  >
-    <a-assets timeout="30000">
-      <!-- Main video (plays when marker is found) -->
-      <video
-        id="video-main"
-        src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/e55c0837b4de5eab59b9993f728b50e8fc6b957d/videos/video1.mp4"
-        preload="metadata"
-        loop
-        crossorigin="anonymous"
-        webkit-playsinline
-        playsinline
-      ></video>
-
-      <!-- Sub video 1 -->
-      <video
-        id="video-sub1"
-        src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/e55c0837b4de5eab59b9993f728b50e8fc6b957d/videos/video2.mp4"
-        preload="metadata"
-        loop
-        crossorigin="anonymous"
-        webkit-playsinline
-        playsinline
-      ></video>
-
-      <!-- Sub video 2 -->
-      <video
-        id="video-sub2"
-        src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/e55c0837b4de5eab59b9993f728b50e8fc6b957d/videos/video3.mp4"
-        preload="metadata"
-        loop
-        crossorigin="anonymous"
-        webkit-playsinline
-        playsinline
-      ></video>
-
-      <!-- Sub video 3 -->
-      <video
-        id="video-sub3"
-        src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/e55c0837b4de5eab59b9993f728b50e8fc6b957d/videos/video4.mp4"
-        preload="metadata"
-        loop
-        crossorigin="anonymous"
-        webkit-playsinline
-        playsinline
-      ></video>
-    </a-assets>
-
-    <a-entity camera raycaster="objects: .clickable"></a-entity>
-    <a-entity cursor="rayOrigin: mouse"></a-entity>
-
-    <!-- NFT Marker -->
-    <a-nft
-      type="nft"
-      url="./memeversetarget"
-      smooth="true"
-      smoothCount="10"
-      smoothTolerance=".01"
-      smoothThreshold="5"
-      id="nft-target"
+    <a-scene
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true; precision: medium; colorManagement: true; alpha: true;"
+      embedded
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
     >
-      <a-entity id="ar-layout" position="100 0 -150" rotation="-90 0 0">
-        <a-plane
-          position="0 0 0"
-          width="180"
-          height="230"
-          color="#111111"
-          opacity="0.85"
-          material="side: double"
-        >
-          <!-- Main video screen -->
-          <a-video
-            id="main-screen"
-            src="#video-main"
-            width="160"
-            height="90"
-            position="0 55 2"
-          ></a-video>
+      <a-assets timeout="30000">
+        <!-- Main video (plays when marker is found) -->
+        <video
+          id="video-main"
+          src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/main/videos/video1.mp4"
+          preload="metadata"
+          loop
+          crossorigin="anonymous"
+          webkit-playsinline
+          playsinline
+        ></video>
 
-          <!-- Sub video screens -->
-          <a-video
-            id="sub-screen-1"
-            class="clickable"
-            src="#video-sub1"
-            width="48"
-            height="55"
-            position="-53 -25 2"
-            video-switcher="target: #video-sub1"
-          ></a-video>
+        <!-- Sub video 1 -->
+        <video
+          id="video-sub1"
+          src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/main/videos/video2.mp4"
+          preload="metadata"
+          loop
+          crossorigin="anonymous"
+          webkit-playsinline
+          playsinline
+        ></video>
 
-          <a-video
-            id="sub-screen-2"
-            class="clickable"
-            src="#video-sub2"
-            width="48"
-            height="55"
-            position="0 -25 2"
-            video-switcher="target: #video-sub2"
-          ></a-video>
+        <!-- Sub video 2 -->
+        <video
+          id="video-sub2"
+          src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/main/videos/video3.mp4"
+          preload="metadata"
+          loop
+          crossorigin="anonymous"
+          webkit-playsinline
+          playsinline
+        ></video>
 
-          <a-video
-            id="sub-screen-3"
-            class="clickable"
-            src="#video-sub3"
-            width="48"
-            height="55"
-            position="53 -25 2"
-            video-switcher="target: #video-sub3"
-          ></a-video>
+        <!-- Sub video 3 -->
+        <video
+          id="video-sub3"
+          src="https://raw.githubusercontent.com/ajaykirandamera1998-rgb/WebAr/main/videos/video4.mp4"
+          preload="metadata"
+          loop
+          crossorigin="anonymous"
+          webkit-playsinline
+          playsinline
+        ></video>
+      </a-assets>
 
-          <a-text
-            value="90s Cafe"
-            color="#00FFCC"
-            align="right"
-            width="120"
-            position="80 -98 2"
-          ></a-text>
-        </a-plane>
-      </a-entity>
-    </a-nft>
-  </a-scene>
+      <a-entity camera raycaster="objects: .clickable"></a-entity>
+      <a-entity cursor="rayOrigin: mouse"></a-entity>
 
+      <!-- NFT Marker -->
+      <a-nft
+        type="nft"
+        url="./memeversetarget"
+        smooth="true"
+        smoothCount="10"
+        smoothTolerance=".01"
+        smoothThreshold="5"
+        id="nft-target"
+      >
+        <a-entity id="ar-layout" position="100 0 -150" rotation="-90 0 0">
+          <a-plane
+            position="0 0 0"
+            width="180"
+            height="230"
+            color="#111111"
+            opacity="0.85"
+            material="side: double"
+          >
+            <!-- Main video screen -->
+            <a-video
+              id="main-screen"
+              src="#video-main"
+              width="160"
+              height="90"
+              position="0 55 2"
+            ></a-video>
+
+            <!-- Sub video screens -->
+            <a-video
+              id="sub-screen-1"
+              class="clickable"
+              src="#video-sub1"
+              width="48"
+              height="55"
+              position="-53 -25 2"
+              video-switcher="target: #video-sub1"
+            ></a-video>
+
+            <a-video
+              id="sub-screen-2"
+              class="clickable"
+              src="#video-sub2"
+              width="48"
+              height="55"
+              position="0 -25 2"
+              video-switcher="target: #video-sub2"
+            ></a-video>
+
+            <a-video
+              id="sub-screen-3"
+              class="clickable"
+              src="#video-sub3"
+              width="48"
+              height="55"
+              position="53 -25 2"
+              video-switcher="target: #video-sub3"
+            ></a-video>
+
+            <a-text
+              value="90s Cafe"
+              color="#00FFCC"
+              align="right"
+              width="120"
+              position="80 -98 2"
+            ></a-text>
+          </a-plane>
+        </a-entity>
+      </a-nft>
+    </a-scene>
+  </main>
+
+  <!-- Existing AR logic -->
   <script>
     const overlay = document.getElementById("overlay");
     const loader = document.getElementById("loader");
@@ -302,6 +301,27 @@
 
       nftMarker.addEventListener("markerLost", () => {
         videos.forEach(v => v.pause());
+      });
+    });
+  </script>
+
+  <!-- Video load/play logging for debugging -->
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const videos = document.querySelectorAll("video");
+      videos.forEach((v, i) => {
+        v.addEventListener("loadedmetadata", () => {
+          console.log("Video loadedmetadata:", v.id, v.videoWidth, "x", v.videoHeight);
+        });
+        v.addEventListener("error", () => {
+          console.error("Video error:", v.id, v.error);
+        });
+        v.addEventListener("play", () => {
+          console.log("Video play:", v.id);
+        });
+        v.addEventListener("pause", () => {
+          console.log("Video pause:", v.id);
+        });
       });
     });
   </script>
