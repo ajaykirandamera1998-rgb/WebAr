@@ -203,7 +203,8 @@
         smoothThreshold="5"
         id="nft-target"
       >
-        <a-entity id="ar-layout" position="100 0 -150" rotation="-90 0 0">
+        <!-- Moved closer to camera for easier testing -->
+        <a-entity id="ar-layout" position="0 0 -0.5" rotation="-90 0 0">
           <a-plane
             position="0 0 0"
             width="180"
@@ -265,7 +266,7 @@
     </a-scene>
   </main>
 
-  <!-- Existing AR logic -->
+  <!-- AR + marker logic with logging and immediate-play test -->
   <script>
     const overlay = document.getElementById("overlay");
     const loader = document.getElementById("loader");
@@ -293,14 +294,27 @@
       const nftMarker = document.querySelector("#nft-target");
       const mainVideo = document.querySelector("#video-main");
 
+      // Log marker events
       nftMarker.addEventListener("markerFound", () => {
+        console.log("MARKER FOUND");
         if (loader) loader.style.display = "none";
         mainVideo.muted = false;
         mainVideo.play();
       });
 
       nftMarker.addEventListener("markerLost", () => {
+        console.log("MARKER LOST");
         videos.forEach(v => v.pause());
+      });
+
+      // TEST MODE: play main video immediately after overlay click,
+      // so you can see the AR layout even if marker is not detected.
+      overlay.addEventListener("click", () => {
+        console.log("Overlay clicked – playing main video immediately (test mode)");
+        mainVideo.muted = false;
+        mainVideo.play().catch(err => {
+          console.log("Main video play error:", err);
+        });
       });
     });
   </script>
