@@ -1,2 +1,0 @@
-# WebAr
-AR Booth
