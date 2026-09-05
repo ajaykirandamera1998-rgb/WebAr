@@ -1,42 +1,75 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>MEMEVERSE AR</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   </head>
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind; autoStart: true"
+      mindar-image="imageTargetSrc: ./targets.mind;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false">
-
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
       <a-assets>
-        <video id="comedian1" src="./comedian1.mp4" preload="auto" loop playsinline></video>
-        <video id="comedian2" src="./comedian2.mp4" preload="auto" loop playsinline></video>
-        <video id="comedian3" src="./comedian3.mp4" preload="auto" loop playsinline></video>
+        <video
+          id="video"
+          src="./video.mp4"
+          preload="auto"
+          loop
+          playsinline
+          webkit-playsinline
+          muted
+          crossorigin="anonymous"
+        ></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Brahmanandam - Image Target 0 -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#comedian1" position="0 0 0" width="1" height="0.6" rotation="0 0 0"></a-video>
+        <a-video
+          src="#video"
+          width="1"
+          height="0.552"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-video>
       </a-entity>
-
-      <!-- Ali - Image Target 1 -->
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-video src="#comedian2" position="0 0 0" width="1" height="0.6" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <!-- Sunil - Image Target 2 -->
-      <a-entity mindar-image-target="targetIndex: 2">
-        <a-video src="#comedian3" position="0 0 0" width="1" height="0.6" rotation="0 0 0"></a-video>
-      </a-entity>
-
     </a-scene>
+
+    <script>
+      const targetEntity = document.querySelector('[mindar-image-target]');
+      const video = document.querySelector('#video');
+
+      // Wait for video to be ready
+      video.addEventListener('loadeddata', () => {
+        console.log('Video loaded and ready');
+      });
+
+      targetEntity.addEventListener('targetFound', () => {
+        console.log('Target found - attempting to play');
+        video.currentTime = 0;
+        video.muted = true; // Ensure muted for mobile autoplay
+        video.play().then(() => {
+          console.log('Video playing');
+        }).catch((error) => {
+          console.log('Play failed:', error);
+          // Fallback: try again after a short delay
+          setTimeout(() => {
+            video.play().catch(e => console.log('Retry failed:', e));
+          }, 100);
+        });
+      });
+
+      targetEntity.addEventListener('targetLost', () => {
+        console.log('Target lost - pausing');
+        video.pause();
+      });
+    </script>
   </body>
 </html>
