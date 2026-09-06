@@ -10,6 +10,7 @@
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
+      xr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
@@ -20,22 +21,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Main Video Plane (Positioned at Z = 0) -->
+        <!-- Main Video Plane Only -->
         <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
-
-        <!-- Top Animated Title (Positioned forward at Z = 0.05 to prevent clipping) -->
-        <a-entity 
-          text="value: SOFTMIND AR; align: center; color: #FFD700; width: 2.2; font: roboto;"
-          position="0 0.42 0.05"
-          animation="property: position; to: 0 0.45 0.05; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
-        </a-entity>
-
-        <!-- Bottom Subtitle Animation -->
-        <a-entity 
-          text="value: Experience the Future; align: center; color: #FFFFFF; width: 1.8; font: roboto;"
-          position="0 -0.38 0.05"
-          animation="property: scale; to: 1.08 1.08 1.08; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
-        </a-entity>
       </a-entity>
     </a-scene>
 
@@ -43,7 +30,6 @@
       const video = document.querySelector("#video");
       const targetEntity = document.querySelector("[mindar-image-target]");
 
-      // Play muted video when target is detected
       targetEntity.addEventListener("targetFound", () => {
         video.play().catch(e => console.log("Autoplay prevented:", e));
       });
@@ -52,7 +38,6 @@
         video.pause();
       });
 
-      // Direct gesture listener to unlock audio output on mobile devices
       const unlockAudio = () => {
         if (video) {
           video.muted = false;
