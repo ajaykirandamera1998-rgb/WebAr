@@ -3,7 +3,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
   </head>
   <body>
     <a-scene 
@@ -21,46 +20,22 @@
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Main Video Plane -->
+        <!-- Main Video Plane (Positioned at Z = 0) -->
         <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
 
-        <!-- Premium Animated Text Header -->
-<a-entity 
-  text="value: SOFTMIND AR ✨; align: center; color: #FFD700; width: 2.5;"
-  position="0 0.45 0"
-  animation="property: position; to: 0 0.48 0; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
-</a-entity>
+        <!-- Top Animated Title (Positioned forward at Z = 0.05 to prevent clipping) -->
+        <a-entity 
+          text="value: SOFTMIND AR; align: center; color: #FFD700; width: 2.2; font: roboto;"
+          position="0 0.42 0.05"
+          animation="property: position; to: 0 0.45 0.05; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
+        </a-entity>
 
-<!-- Floating Emojis -->
-<a-entity 
-  text="value: 🚀; align: center; width: 3;"
-  position="-0.65 -0.38 0.05"
-  animation="property: position; to: -0.65 -0.34 0.05; dir: alternate; dur: 1200; loop: true; easing: easeInOutQuad"
-  animation__rot="property: rotation; to: 0 0 15; dir: alternate; dur: 1800; loop: true">
-</a-entity>
-
-<a-entity 
-  text="value: Experience the Future!; align: center; color: #FFFFFF; width: 1.8;"
-  position="0 -0.38 0"
-  animation="property: scale; to: 1.08 1.08 1.08; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
-</a-entity>
-
-        <a-text 
-          value="Experience the Future!" 
-          align="center" 
-          color="#FFFFFF" 
-          width="1.8" 
-          position="0 -0.38 0"
-          animation="property: scale; dir: alternate; dur: 1000; easing: easeInOutSine; loop: true; to: 1.05 1.05 1.05">
-        </a-text>
-
-        <a-text 
-          value="👋" 
-          align="center" 
-          width="3" 
-          position="0.65 -0.38 0.05"
-          animation="property: rotation; dir: alternate; dur: 800; easing: easeInOutSine; loop: true; from: -10 0 0; to: 10 0 0">
-        </a-text>
+        <!-- Bottom Subtitle Animation -->
+        <a-entity 
+          text="value: Experience the Future; align: center; color: #FFFFFF; width: 1.8; font: roboto;"
+          position="0 -0.38 0.05"
+          animation="property: scale; to: 1.08 1.08 1.08; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
+        </a-entity>
       </a-entity>
     </a-scene>
 
@@ -68,7 +43,7 @@
       const video = document.querySelector("#video");
       const targetEntity = document.querySelector("[mindar-image-target]");
 
-      // Play video muted on target found
+      // Play muted video when target is detected
       targetEntity.addEventListener("targetFound", () => {
         video.play().catch(e => console.log("Autoplay prevented:", e));
       });
@@ -77,11 +52,10 @@
         video.pause();
       });
 
-      // Explicit Unmute on First Touch/Click
+      // Direct gesture listener to unlock audio output on mobile devices
       const unlockAudio = () => {
         if (video) {
           video.muted = false;
-          // Re-trigger play within user action frame to satisfy browser security
           video.play().then(() => {
             window.removeEventListener("click", unlockAudio);
             window.removeEventListener("touchstart", unlockAudio);
