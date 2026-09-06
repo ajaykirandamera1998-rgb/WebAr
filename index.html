@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+  <body>
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
+        <video id="video" src="./video.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <!-- Main Video Plane -->
+        <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
+
+        <!-- Premium Animated Text Header -->
+        <a-text 
+          value="SOFTMIND AR ✨" 
+          align="center" 
+          color="#FFD700" 
+          width="2.5" 
+          position="0 0.45 0"
+          animation="property: position; dir: alternate; dur: 1500; easing: easeInOutSine; loop: true; to: 0 0.48 0"
+          animation__fade="property: components.text.material.uniforms.opacity.value; dir: alternate; dur: 2000; loop: true; from: 0.7; to: 1">
+        </a-text>
+
+        <!-- Floating Animated Emoji Elements -->
+        <a-text 
+          value="🚀" 
+          align="center" 
+          width="3" 
+          position="-0.65 -0.38 0.05"
+          animation="property: position; dir: alternate; dur: 1200; easing: easeInOutQuad; loop: true; to: -0.65 -0.34 0.05"
+          animation__rotate="property: rotation; dir: alternate; dur: 1800; loop: true; to: 0 0 15">
+        </a-text>
+
+        <a-text 
+          value="Experience the Future!" 
+          align="center" 
+          color="#FFFFFF" 
+          width="1.8" 
+          position="0 -0.38 0"
+          animation="property: scale; dir: alternate; dur: 1000; easing: easeInOutSine; loop: true; to: 1.05 1.05 1.05">
+        </a-text>
+
+        <a-text 
+          value="👋" 
+          align="center" 
+          width="3" 
+          position="0.65 -0.38 0.05"
+          animation="property: rotation; dir: alternate; dur: 800; easing: easeInOutSine; loop: true; from: -10 0 0; to: 10 0 0">
+        </a-text>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const video = document.querySelector("#video");
+      const targetEntity = document.querySelector("[mindar-image-target]");
+
+      // Play video muted on target found
+      targetEntity.addEventListener("targetFound", () => {
+        video.play().catch(e => console.log("Autoplay prevented:", e));
+      });
+
+      targetEntity.addEventListener("targetLost", () => {
+        video.pause();
+      });
+
+      // Explicit Unmute on First Touch/Click
+      const unlockAudio = () => {
+        if (video) {
+          video.muted = false;
+          // Re-trigger play within user action frame to satisfy browser security
+          video.play().then(() => {
+            window.removeEventListener("click", unlockAudio);
+            window.removeEventListener("touchstart", unlockAudio);
+          }).catch(err => console.log("Audio unlock error:", err));
+        }
+      };
+
+      window.addEventListener("click", unlockAudio);
+      window.addEventListener("touchstart", unlockAudio);
+    </script>
+  </body>
+</html>
