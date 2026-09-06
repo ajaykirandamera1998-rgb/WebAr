@@ -3,25 +3,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <style>
+      /* Screen-space layer for the emoji reaction burst — sits ON TOP of
+         the AR canvas but is NOT part of the 3D scene. This is what lets
+         the animated GIFs actually animate (WebGL textures can't play
+         animated GIFs without a custom decoder; a plain <img> can). */
+      #emoji-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 50;
+      }
+      #emoji-layer img {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        will-change: transform, opacity;
+      }
+    </style>
   </head>
   <body>
-    <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind;" 
-      color-space="sRGB" 
-      renderer="colorManagement: true, physicallyCorrectLights" 
-      vr-mode-ui="enabled: false" 
+    <div id="emoji-layer"></div>
+
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
       xr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false">
-      
+
       <a-assets>
         <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
         <video id="video" src="./video.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
       </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
-
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Main Video Plane Only -->
+        <!-- Video Plane Only -->
         <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
     </a-scene>
@@ -30,14 +51,16 @@
       const video = document.querySelector("#video");
       const targetEntity = document.querySelector("[mindar-image-target]");
 
+      // Play video muted on target detection
       targetEntity.addEventListener("targetFound", () => {
         video.play().catch(e => console.log("Autoplay prevented:", e));
+        spawnEmojiBurst();
       });
-
       targetEntity.addEventListener("targetLost", () => {
         video.pause();
       });
 
+      // Enable audio on user interaction
       const unlockAudio = () => {
         if (video) {
           video.muted = false;
@@ -47,9 +70,63 @@
           }).catch(err => console.log("Audio unlock error:", err));
         }
       };
-
       window.addEventListener("click", unlockAudio);
       window.addEventListener("touchstart", unlockAudio);
+
+      // ----------------------------------------------------------------
+      // Emoji reaction burst — real animated Noto emoji GIFs (Google's
+      // open, freely-licensed emoji set — no real people/faces involved).
+      // Fires a handful of laughing/clapping emoji that pop in, drift
+      // upward with a slight sideways wobble, and fade out.
+      // ----------------------------------------------------------------
+      const EMOJI_CODEPOINTS = ["1f602", "1f923", "1f44f", "1f606"]; // 😂 🤣 👏 😆
+      const emojiLayer = document.querySelector("#emoji-layer");
+
+      function spawnEmojiBurst(count = 6) {
+        for (let i = 0; i < count; i++) {
+          const code = EMOJI_CODEPOINTS[Math.floor(Math.random() * EMOJI_CODEPOINTS.length)];
+          const img = document.createElement("img");
+          img.src = `https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.gif`;
+
+          // start clustered near the bottom-center of the screen, near
+          // where the AR video plane roughly sits
+          const startX = window.innerWidth / 2 + (Math.random() - 0.5) * 160;
+          const startY = window.innerHeight * 0.65;
+
+          img.style.left = `${startX}px`;
+          img.style.top = `${startY}px`;
+          img.style.opacity = "0";
+          img.style.transform = "scale(0.3) rotate(0deg)";
+
+          emojiLayer.appendChild(img);
+
+          const drift = (Math.random() - 0.5) * 220;
+          const rise = 260 + Math.random() * 160;
+          const rotate = (Math.random() - 0.5) * 60;
+          const delay = i * 0.08;
+
+          gsap.timeline({ delay, onComplete: () => img.remove() })
+            .to(img, {
+              opacity: 1,
+              scale: 1,
+              rotate: rotate,
+              duration: 0.35,
+              ease: "back.out(2.5)"
+            }, 0)
+            .to(img, {
+              x: drift,
+              y: -rise,
+              duration: 1.4,
+              ease: "power1.out"
+            }, 0)
+            .to(img, {
+              opacity: 0,
+              scale: 0.6,
+              duration: 0.4,
+              ease: "power1.in"
+            }, 1.0);
+        }
+      }
     </script>
   </body>
 </html>
