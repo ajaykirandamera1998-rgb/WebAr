@@ -3,6 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
   </head>
   <body>
     <a-scene 
@@ -24,25 +25,25 @@
         <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
 
         <!-- Premium Animated Text Header -->
-        <a-text 
-          value="SOFTMIND AR ✨" 
-          align="center" 
-          color="#FFD700" 
-          width="2.5" 
-          position="0 0.45 0"
-          animation="property: position; dir: alternate; dur: 1500; easing: easeInOutSine; loop: true; to: 0 0.48 0"
-          animation__fade="property: components.text.material.uniforms.opacity.value; dir: alternate; dur: 2000; loop: true; from: 0.7; to: 1">
-        </a-text>
+<a-entity 
+  text="value: SOFTMIND AR ✨; align: center; color: #FFD700; width: 2.5;"
+  position="0 0.45 0"
+  animation="property: position; to: 0 0.48 0; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
+</a-entity>
 
-        <!-- Floating Animated Emoji Elements -->
-        <a-text 
-          value="🚀" 
-          align="center" 
-          width="3" 
-          position="-0.65 -0.38 0.05"
-          animation="property: position; dir: alternate; dur: 1200; easing: easeInOutQuad; loop: true; to: -0.65 -0.34 0.05"
-          animation__rotate="property: rotation; dir: alternate; dur: 1800; loop: true; to: 0 0 15">
-        </a-text>
+<!-- Floating Emojis -->
+<a-entity 
+  text="value: 🚀; align: center; width: 3;"
+  position="-0.65 -0.38 0.05"
+  animation="property: position; to: -0.65 -0.34 0.05; dir: alternate; dur: 1200; loop: true; easing: easeInOutQuad"
+  animation__rot="property: rotation; to: 0 0 15; dir: alternate; dur: 1800; loop: true">
+</a-entity>
+
+<a-entity 
+  text="value: Experience the Future!; align: center; color: #FFFFFF; width: 1.8;"
+  position="0 -0.38 0"
+  animation="property: scale; to: 1.08 1.08 1.08; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
+</a-entity>
 
         <a-text 
           value="Experience the Future!" 
