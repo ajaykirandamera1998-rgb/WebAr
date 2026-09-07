@@ -1,32 +1,73 @@
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
     <style>
-      /* Screen-space layer for the emoji reaction burst — sits ON TOP of
-         the AR canvas but is NOT part of the 3D scene. This is what lets
-         the animated GIFs actually animate (WebGL textures can't play
-         animated GIFs without a custom decoder; a plain <img> can). */
-      #emoji-layer {
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+
+      /* Hard-remove any leftover A-Frame VR/AR UI buttons, on top of the
+         vr-mode-ui/xr-mode-ui attributes below. Some builds still inject
+         these into the DOM even when "disabled" via attribute. */
+      .a-enter-vr,
+      .a-enter-ar,
+      .a-orientation-modal,
+      .a-loader-title {
+        display: none !important;
+      }
+
+      /* -------- Tap-to-start overlay (fixes audio reliability) -------- */
+      #tap-overlay {
         position: fixed;
         inset: 0;
-        pointer-events: none;
-        overflow: hidden;
-        z-index: 50;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.82);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+        text-align: center;
+        padding: 24px;
       }
-      #emoji-layer img {
-        position: absolute;
-        width: 64px;
-        height: 64px;
-        will-change: transform, opacity;
+      #tap-overlay button {
+        margin-top: 18px;
+        padding: 14px 34px;
+        font-size: 18px;
+        font-weight: 700;
+        border: none;
+        border-radius: 999px;
+        background: #E8A62E;
+        color: #241A14;
+      }
+      #tap-overlay.hidden { display: none; }
+
+      /* -------- Looping GIF overlay (screen-space, one at a time) -------- */
+      #loop-gif {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 42vw;
+        max-width: 320px;
+        transform: translate(-50%, -50%);
+        z-index: 40;
+        pointer-events: none;
+        opacity: 0;
       }
     </style>
   </head>
+
   <body>
-    <div id="emoji-layer"></div>
+    <div id="tap-overlay">
+      <div style="font-size:22px;font-weight:700;">MEMEVERSE</div>
+      <div style="opacity:0.75;font-size:14px;">Tap to start &amp; enable sound</div>
+      <button id="tap-btn">Tap to Start</button>
+    </div>
+
+    <img id="loop-gif" src="" alt="" />
 
     <a-scene
       mindar-image="imageTargetSrc: ./targets.mind;"
@@ -34,98 +75,127 @@
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
       xr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false">
-
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
       <a-assets>
-        <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
-        <video id="video" src="./video.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+        <video
+          id="video"
+          src="./video.mp4"
+          preload="auto"
+          loop="true"
+          crossorigin="anonymous"
+          playsinline
+          webkit-playsinline
+          muted
+        ></video>
       </a-assets>
-      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse"></a-camera>
+
+      <a-camera
+        position="0 0 0"
+        look-controls="enabled: false"
+        raycaster="objects: .clickable"
+        cursor="fuse: false; rayOrigin: mouse"
+      ></a-camera>
+
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Video Plane Only -->
-        <a-video id="video-entity" class="clickable" src="#video" width="1" height="0.55" position="0 0 0" rotation="0 0 0"></a-video>
+        <a-video
+          id="video-entity"
+          class="clickable"
+          src="#video"
+          width="1"
+          height="0.55"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-video>
       </a-entity>
     </a-scene>
 
     <script>
       const video = document.querySelector("#video");
       const targetEntity = document.querySelector("[mindar-image-target]");
+      const tapOverlay = document.querySelector("#tap-overlay");
+      const tapBtn = document.querySelector("#tap-btn");
 
-      // Play video muted on target detection
+      // ------------------------------------------------------------------
+      // AUDIO — explicit tap-to-start instead of a silent window listener.
+      // This is the reliable fix: the unmute + first play() call now
+      // happens directly inside a real button click, which every mobile
+      // browser (including iOS Safari) counts as a genuine user gesture.
+      // ------------------------------------------------------------------
+      tapBtn.addEventListener("click", () => {
+        video.muted = false;
+        video.play().catch(() => {
+          // fine if this fails here — targetFound will retry play()
+        });
+        tapOverlay.classList.add("hidden");
+      });
+
       targetEntity.addEventListener("targetFound", () => {
         video.play().catch(e => console.log("Autoplay prevented:", e));
-        spawnEmojiBurst();
+        startGifLoop();
       });
+
       targetEntity.addEventListener("targetLost", () => {
         video.pause();
+        stopGifLoop();
       });
 
-      // Enable audio on user interaction
-      const unlockAudio = () => {
-        if (video) {
-          video.muted = false;
-          video.play().then(() => {
-            window.removeEventListener("click", unlockAudio);
-            window.removeEventListener("touchstart", unlockAudio);
-          }).catch(err => console.log("Audio unlock error:", err));
-        }
+      // ------------------------------------------------------------------
+      // LOOPING GIFS — your own local files. One <img> element cycles
+      // through the assigned list on a simple crossfade, continuously,
+      // for as long as the target stays tracked. Only one frame is ever
+      // visible at a time, so nothing overlaps.
+      // ------------------------------------------------------------------
+
+      // Map each targetIndex to the GIFs that should loop for it.
+      // Right now there's only target 0 in this file — assign whichever
+      // of your 7 GIFs you want for it. When you add more targets later,
+      // just add more keys here (e.g. 1: ["Gifs/4.GIF","Gifs/5.GIF"]).
+      const GIF_SETS = {
+        0: ["Gifs/1.GIF", "Gifs/2.GIF", "Gifs/3.GIF", "Gifs/4.GIF", "Gifs/5.GIF", "Gifs/6.GIF", "Gifs/7.GIF"]
       };
-      window.addEventListener("click", unlockAudio);
-      window.addEventListener("touchstart", unlockAudio);
 
-      // ----------------------------------------------------------------
-      // Emoji reaction burst — real animated Noto emoji GIFs (Google's
-      // open, freely-licensed emoji set — no real people/faces involved).
-      // Fires a handful of laughing/clapping emoji that pop in, drift
-      // upward with a slight sideways wobble, and fade out.
-      // ----------------------------------------------------------------
-      const EMOJI_CODEPOINTS = ["1f602", "1f923", "1f44f", "1f606"]; // 😂 🤣 👏 😆
-      const emojiLayer = document.querySelector("#emoji-layer");
+      const GIF_FRAME_MS = 500; // how long each gif stays up before cycling to the next
 
-      function spawnEmojiBurst(count = 6) {
-        for (let i = 0; i < count; i++) {
-          const code = EMOJI_CODEPOINTS[Math.floor(Math.random() * EMOJI_CODEPOINTS.length)];
-          const img = document.createElement("img");
-          img.src = `https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.gif`;
+      const loopGifEl = document.querySelector("#loop-gif");
+      let gifTimer = null;
+      let gifIndex = 0;
 
-          // start clustered near the bottom-center of the screen, near
-          // where the AR video plane roughly sits
-          const startX = window.innerWidth / 2 + (Math.random() - 0.5) * 160;
-          const startY = window.innerHeight * 0.65;
+      function showNextGifFrame(gifList) {
+        const src = gifList[gifIndex % gifList.length];
+        gifIndex++;
 
-          img.style.left = `${startX}px`;
-          img.style.top = `${startY}px`;
-          img.style.opacity = "0";
-          img.style.transform = "scale(0.3) rotate(0deg)";
+        loopGifEl.src = src;
 
-          emojiLayer.appendChild(img);
+        // simple clean crossfade between frames — loops continuously
+        // through the list for as long as the target stays tracked.
+        gsap.killTweensOf(loopGifEl);
+        gsap.set(loopGifEl, { opacity: 0 });
+        gsap.to(loopGifEl, {
+          opacity: 0.9,
+          duration: 0.15,
+          ease: "power1.out"
+        });
+      }
 
-          const drift = (Math.random() - 0.5) * 220;
-          const rise = 260 + Math.random() * 160;
-          const rotate = (Math.random() - 0.5) * 60;
-          const delay = i * 0.08;
+      function startGifLoop() {
+        const gifList = GIF_SETS[0]; // hardcoded to target 0 for this single-target file
+        if (!gifList || !gifList.length) return;
 
-          gsap.timeline({ delay, onComplete: () => img.remove() })
-            .to(img, {
-              opacity: 1,
-              scale: 1,
-              rotate: rotate,
-              duration: 0.35,
-              ease: "back.out(2.5)"
-            }, 0)
-            .to(img, {
-              x: drift,
-              y: -rise,
-              duration: 1.4,
-              ease: "power1.out"
-            }, 0)
-            .to(img, {
-              opacity: 0,
-              scale: 0.6,
-              duration: 0.4,
-              ease: "power1.in"
-            }, 1.0);
+        stopGifLoop(); // safety: clear any previous loop first
+        gifIndex = 0;
+        showNextGifFrame(gifList);
+        gifTimer = setInterval(() => showNextGifFrame(gifList), GIF_FRAME_MS);
+      }
+
+      function stopGifLoop() {
+        if (gifTimer) {
+          clearInterval(gifTimer);
+          gifTimer = null;
         }
+        gsap.killTweensOf(loopGifEl);
+        gsap.to(loopGifEl, { opacity: 0, duration: 0.15 });
       }
     </script>
   </body>
