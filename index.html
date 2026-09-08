@@ -108,23 +108,17 @@
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
 
-      /* Make sure MindAR's camera feed and the A-Frame canvas actually
-         fill the viewport. A black screen is very often just these
-         elements not being sized full-screen — the camera IS running,
-         you just can't see it under/behind everything else. */
-      a-scene, a-scene canvas, video {
-        position: fixed !important;
-        top: 0; left: 0;
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: cover;
-      }
-      /* ...but the meme-clip video and looping GIF are managed by their
-         own rules below — undo the blanket rule above for those two. */
-      #video, #loop-gif {
-        position: static !important;
-        width: auto !important;
-        height: auto !important;
+      /* IMPORTANT: do NOT force position/size on MindAR's own video/canvas
+         elements with !important — MindAR ships its own internal styling
+         for camera aspect-ratio and positioning, and fighting it here is
+         what was causing the camera passthrough to go black while tracking
+         still worked underneath (tracking reads raw frame data, not the
+         DOM/CSS layer, so it kept working even though the visible feed
+         broke). Just make sure the scene container itself fills the
+         viewport and let MindAR manage everything inside it. */
+      a-scene {
+        width: 100%;
+        height: 100%;
       }
 
       /* Hard-remove any leftover A-Frame VR/AR UI buttons, on top of the
@@ -544,6 +538,21 @@
       let gifTimer = null;
       let gifIndex = 0;
       const irisProxy = { r: 0 }; // proxy value animated, then written to clip-path each tick
+
+      // If a GIF fails to load (wrong path/filename/case), hide it cleanly
+      // instead of showing the browser's broken-image icon + outline box —
+      // that box-with-icon-in-the-corner look is exactly what a 404 image
+      // renders as, which is what showed up in your test screenshot.
+      loopGifEl.addEventListener("error", () => {
+        console.warn(
+          `MEMEVERSE: GIF failed to load -> "${loopGifEl.src}". ` +
+          `Check the file exists at that exact path (case-sensitive) ` +
+          `relative to index.html.`
+        );
+        gsap.killTweensOf(irisProxy);
+        irisProxy.r = 0;
+        loopGifEl.style.clipPath = "circle(0% at 50% 50%)";
+      });
 
       function showNextGifFrame(gifList) {
         const src = gifList[gifIndex % gifList.length];
