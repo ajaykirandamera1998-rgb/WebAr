@@ -1,642 +1,1149 @@
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
 
-    <script>
-      // ------------------------------------------------------------------
-      // comic-frame — MUST be registered here, before <a-scene> is parsed
-      // in <body>. If this script sits after <a-scene> in the document,
-      // the browser can try to attach the component to the <a-entity
-      // comic-frame="..."> tag before AFRAME even knows what "comic-frame"
-      // means, which silently fails.
-      //
-      // Draws a poster-matching card border (cream fill, thick black
-      // outline, drop shadow) with a fully TRANSPARENT cutout sized to the
-      // video, so it can never z-fight with it:
-      //  1. The cutout region is fully transparent (alpha 0) exactly where
-      //     the video sits — so at any pixel, only ONE of the two surfaces
-      //     ever has visible content there.
-      //  2. depthWrite is disabled on the frame's material, so it can
-      //     never win/lose a depth-buffer race against the video plane.
-      //  3. It sits at a slightly different z (-0.015) than the video (0),
-      //     so the two are never perfectly coplanar to begin with.
-      // ------------------------------------------------------------------
-      AFRAME.registerComponent('comic-frame', {
-        schema: {
-          innerWidth: { type: 'number', default: 1 },
-          innerHeight: { type: 'number', default: 0.55 },
-          borderScale: { type: 'number', default: 1.14 }
-        },
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
 
-        init: function () {
-          const THREE = AFRAME.THREE;
-          const { innerWidth, innerHeight, borderScale } = this.data;
+  <title>MEMEVERSE</title>
 
-          const outerW = innerWidth * borderScale;
-          const outerH = innerHeight * borderScale;
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600&display=swap"
+    rel="stylesheet"
+  />
 
-          const canvas = document.createElement('canvas');
-          canvas.width = 1024;
-          canvas.height = Math.round(1024 * (outerH / outerW));
-          const ctx = canvas.getContext('2d');
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
-          const marginFrac = (borderScale - 1) / (2 * borderScale);
-          const mx = canvas.width * marginFrac;
-          const my = canvas.height * marginFrac;
-          const outerRadius = canvas.width * 0.035;
-          const innerRadius = canvas.width * 0.018;
+  <script>
+    AFRAME.registerComponent("comic-frame", {
+      schema: {
+        innerWidth: { type: "number", default: 1 },
+        innerHeight: { type: "number", default: 0.55 },
+        borderScale: { type: "number", default: 1.14 }
+      },
 
-          function roundedRectPath(x, y, w, h, r) {
-            ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.arcTo(x + w, y, x + w, y + h, r);
-            ctx.arcTo(x + w, y + h, x, y + h, r);
-            ctx.arcTo(x, y + h, x, y, r);
-            ctx.arcTo(x, y, x + w, y, r);
-            ctx.closePath();
-          }
+      init: function () {
+        const THREE = AFRAME.THREE;
+        const { innerWidth, innerHeight, borderScale } = this.data;
 
-          ctx.save();
-          ctx.shadowColor = 'rgba(36,26,20,0.35)';
-          ctx.shadowBlur = canvas.width * 0.025;
-          ctx.shadowOffsetY = canvas.width * 0.012;
-          roundedRectPath(0, 0, canvas.width, canvas.height, outerRadius);
-          ctx.fillStyle = '#F7EFD9';
-          ctx.fill();
-          ctx.restore();
+        const outerW = innerWidth * borderScale;
+        const outerH = innerHeight * borderScale;
 
-          roundedRectPath(0, 0, canvas.width, canvas.height, outerRadius);
-          ctx.lineWidth = canvas.width * 0.014;
-          ctx.strokeStyle = '#241A14';
-          ctx.stroke();
+        const canvas = document.createElement("canvas");
+        canvas.width = 1024;
+        canvas.height = Math.round(1024 * (outerH / outerW));
 
-          ctx.save();
-          ctx.globalCompositeOperation = 'destination-out';
-          roundedRectPath(mx, my, canvas.width - mx * 2, canvas.height - my * 2, innerRadius);
-          ctx.fill();
-          ctx.restore();
+        const ctx = canvas.getContext("2d");
 
-          roundedRectPath(mx, my, canvas.width - mx * 2, canvas.height - my * 2, innerRadius);
-          ctx.lineWidth = canvas.width * 0.009;
-          ctx.strokeStyle = '#241A14';
-          ctx.stroke();
+        const marginFrac = (borderScale - 1) / (2 * borderScale);
+        const mx = canvas.width * marginFrac;
+        const my = canvas.height * marginFrac;
 
-          const texture = new THREE.CanvasTexture(canvas);
-          texture.needsUpdate = true;
+        const outerRadius = canvas.width * 0.035;
+        const innerRadius = canvas.width * 0.018;
 
-          const geometry = new THREE.PlaneGeometry(outerW, outerH);
-          const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            depthWrite: false,
-            side: THREE.DoubleSide
-          });
-
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.renderOrder = 0;
-          this.el.setObject3D('mesh', mesh);
+        function roundedRectPath(x, y, w, h, radius) {
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.arcTo(x + w, y, x + w, y + h, radius);
+          ctx.arcTo(x + w, y + h, x, y + h, radius);
+          ctx.arcTo(x, y + h, x, y, radius);
+          ctx.arcTo(x, y, x + w, y, radius);
+          ctx.closePath();
         }
-      });
-    </script>
 
-    <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+        /* Cream outer card with soft shadow */
+        ctx.save();
+        ctx.shadowColor = "rgba(36, 26, 20, 0.35)";
+        ctx.shadowBlur = canvas.width * 0.025;
+        ctx.shadowOffsetY = canvas.width * 0.012;
 
-      /* IMPORTANT: do NOT force position/size on MindAR's own video/canvas
-         elements with !important — MindAR ships its own internal styling
-         for camera aspect-ratio and positioning, and fighting it here is
-         what was causing the camera passthrough to go black while tracking
-         still worked underneath (tracking reads raw frame data, not the
-         DOM/CSS layer, so it kept working even though the visible feed
-         broke). Just make sure the scene container itself fills the
-         viewport and let MindAR manage everything inside it. */
-      a-scene {
-        width: 100%;
-        height: 100%;
+        roundedRectPath(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          outerRadius
+        );
+
+        ctx.fillStyle = "#F7EFD9";
+        ctx.fill();
+        ctx.restore();
+
+        /* Outer black outline */
+        roundedRectPath(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          outerRadius
+        );
+
+        ctx.lineWidth = canvas.width * 0.014;
+        ctx.strokeStyle = "#241A14";
+        ctx.stroke();
+
+        /* Transparent video cutout */
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-out";
+
+        roundedRectPath(
+          mx,
+          my,
+          canvas.width - mx * 2,
+          canvas.height - my * 2,
+          innerRadius
+        );
+
+        ctx.fill();
+        ctx.restore();
+
+        /* Inner black outline */
+        roundedRectPath(
+          mx,
+          my,
+          canvas.width - mx * 2,
+          canvas.height - my * 2,
+          innerRadius
+        );
+
+        ctx.lineWidth = canvas.width * 0.009;
+        ctx.strokeStyle = "#241A14";
+        ctx.stroke();
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        texture.colorSpace = THREE.SRGBColorSpace;
+
+        const geometry = new THREE.PlaneGeometry(outerW, outerH);
+
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+
+        mesh.renderOrder = 0;
+
+        this.el.setObject3D("mesh", mesh);
+      }
+    });
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      touch-action: manipulation;
+    }
+
+    /*
+      MindAR dynamically creates its own camera video and tracking canvas.
+      These styles keep them full-screen and behind the AR scene.
+    */
+    video.mindar-video {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      object-fit: cover !important;
+      z-index: 0 !important;
+      display: block !important;
+      background: transparent !important;
+    }
+
+    canvas.mindar-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 1 !important;
+      display: block !important;
+      pointer-events: none !important;
+    }
+
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2 !important;
+      display: block !important;
+      background: transparent !important;
+    }
+
+    .a-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2 !important;
+      display: block !important;
+      background: transparent !important;
+    }
+
+    .a-enter-vr,
+    .a-enter-ar,
+    .a-orientation-modal,
+    .a-loader-title {
+      display: none !important;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Entry screen                                                  */
+    /* ------------------------------------------------------------- */
+
+    #entry-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      background: #f2e6c9;
+    }
+
+    #entry-screen.hidden {
+      display: none;
+    }
+
+    #entry-sunburst {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 220vw;
+      height: 220vw;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: repeating-conic-gradient(
+        #e8a62e 0deg 9deg,
+        #c1432e 9deg 18deg
+      );
+      opacity: 0.22;
+    }
+
+    #entry-title {
+      position: relative;
+      margin: 0;
+      color: #7a2426;
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(48px, 15vw, 72px);
+      font-weight: 800;
+      letter-spacing: 1px;
+      line-height: 0.95;
+      text-shadow:
+        4px 4px 0 #e8a62e,
+        7px 7px 0 #241a14;
+    }
+
+    #entry-subtitle {
+      position: relative;
+      margin-top: 14px;
+      padding: 7px 22px;
+      border: 3px solid #241a14;
+      border-radius: 999px;
+      background: #1b6b67;
+      color: #f7efd9;
+      font-family: "Fredoka", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    #entry-hint {
+      position: relative;
+      max-width: 300px;
+      margin: 26px 0 0;
+      color: #241a14;
+      font-family: "Fredoka", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.8;
+    }
+
+    #entry-btn {
+      position: relative;
+      margin-top: 22px;
+      padding: 14px 38px;
+      border: 3px solid #241a14;
+      border-radius: 999px;
+      background: #e8a62e;
+      color: #241a14;
+      box-shadow: 4px 4px 0 #241a14;
+      font-family: "Fredoka", sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #entry-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 #241a14;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Scan HUD                                                      */
+    /* ------------------------------------------------------------- */
+
+    #scan-hud {
+      position: fixed;
+      inset: 0;
+      z-index: 45;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    #scan-hud.visible {
+      opacity: 1;
+    }
+
+    #scan-frame {
+      position: relative;
+      width: 58vw;
+      max-width: 320px;
+      aspect-ratio: 1 / 1.15;
+    }
+
+    #scan-frame .corner {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border: 4px solid #e8a62e;
+      animation: scan-pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scan-pulse {
+      0%,
+      100% {
+        opacity: 0.55;
       }
 
-      /* Hard-remove any leftover A-Frame VR/AR UI buttons, on top of the
-         vr-mode-ui/xr-mode-ui attributes below. Some builds still inject
-         these into the DOM even when "disabled" via attribute. */
-      .a-enter-vr,
-      .a-enter-ar,
-      .a-orientation-modal,
-      .a-loader-title {
-        display: none !important;
+      50% {
+        opacity: 1;
       }
+    }
 
-      /* -------- Branded entry screen (replaces the old plain overlays) - */
-      #entry-screen {
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        overflow: hidden;
-        background: #F2E6C9;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 24px;
-      }
-      #entry-sunburst {
-        position: absolute;
-        top: 50%; left: 50%;
-        width: 220vw; height: 220vw;
-        transform: translate(-50%, -50%);
-        background: repeating-conic-gradient(#E8A62E 0deg 9deg, #C1432E 9deg 18deg);
-        opacity: 0.22;
-        border-radius: 50%;
-      }
-      #entry-title {
-        position: relative;
-        font-family: 'Baloo 2', sans-serif;
-        font-weight: 800;
-        font-size: 15vw;
-        max-font-size: 72px;
-        color: #7A2426;
-        text-shadow: 4px 4px 0 #E8A62E, 7px 7px 0 #241A14;
-        margin: 0;
-        letter-spacing: 1px;
-      }
-      #entry-subtitle {
-        position: relative;
-        font-family: 'Fredoka', sans-serif;
-        font-weight: 600;
-        font-size: 16px;
-        color: #F7EFD9;
-        background: #1B6B67;
-        padding: 7px 22px;
-        border-radius: 40px;
-        border: 3px solid #241A14;
-        margin-top: 10px;
-      }
-      #entry-hint {
-        position: relative;
-        font-family: 'Fredoka', sans-serif;
-        font-size: 14px;
-        color: #241A14;
-        opacity: 0.75;
-        margin-top: 26px;
-        max-width: 280px;
-      }
-      #entry-btn {
-        position: relative;
-        margin-top: 20px;
-        padding: 14px 38px;
-        font-family: 'Fredoka', sans-serif;
-        font-size: 17px;
-        font-weight: 600;
-        border: 3px solid #241A14;
-        border-radius: 999px;
-        background: #E8A62E;
-        color: #241A14;
-        box-shadow: 4px 4px 0 #241A14;
-      }
-      #entry-screen.hidden { display: none; }
+    #scan-frame .tl {
+      top: 0;
+      left: 0;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 10px 0 0 0;
+    }
 
-      /* -------- Camera scanning HUD (shown whenever no target is locked) */
-      #scan-hud {
-        position: fixed;
-        inset: 0;
-        z-index: 45;
-        pointer-events: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.35s ease;
-      }
-      #scan-hud.visible { opacity: 1; }
-      #scan-frame {
-        position: relative;
-        width: 58vw;
-        max-width: 320px;
-        aspect-ratio: 1 / 1.15;
-      }
-      #scan-frame .corner {
-        position: absolute;
-        width: 34px;
-        height: 34px;
-        border: 4px solid #E8A62E;
-        animation: scan-pulse 1.8s ease-in-out infinite;
-      }
-      @keyframes scan-pulse {
-        0%, 100% { opacity: 0.55; }
-        50% { opacity: 1; }
-      }
-      #scan-frame .tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
-      #scan-frame .tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
-      #scan-frame .bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
-      #scan-frame .br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
-      #scan-hint {
-        position: absolute;
-        bottom: -42px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: 'Fredoka', sans-serif;
-        font-size: 14px;
-        color: #fff;
-        background: rgba(0,0,0,0.55);
-        padding: 6px 16px;
-        border-radius: 999px;
-        white-space: nowrap;
-      }
+    #scan-frame .tr {
+      top: 0;
+      right: 0;
+      border-bottom: none;
+      border-left: none;
+      border-radius: 0 10px 0 0;
+    }
 
-      /* -------- Camera/permission error toast -------- */
-      #ar-error-toast {
-        position: fixed;
-        left: 50%;
-        bottom: 26px;
-        transform: translateX(-50%);
-        z-index: 95;
-        max-width: 86vw;
-        background: rgba(20,10,8,0.92);
-        color: #F7EFD9;
-        font-family: 'Fredoka', sans-serif;
-        font-size: 13px;
-        line-height: 1.5;
-        padding: 12px 18px;
-        border-radius: 14px;
-        display: none;
-        text-align: center;
-      }
-      #ar-error-toast.visible { display: block; }
+    #scan-frame .bl {
+      bottom: 0;
+      left: 0;
+      border-top: none;
+      border-right: none;
+      border-radius: 0 0 0 10px;
+    }
 
-      /* -------- Ambient particles while scanning (idle state) --------- */
-      #ambient-layer {
-        position: fixed;
-        inset: 0;
-        z-index: 44;
-        pointer-events: none;
-        overflow: hidden;
-      }
-      .ambient-dot {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #E8A62E;
-        opacity: 0;
-      }
+    #scan-frame .br {
+      right: 0;
+      bottom: 0;
+      border-top: none;
+      border-left: none;
+      border-radius: 0 0 10px 0;
+    }
 
-      /* -------- Looping GIF overlay (screen-space, one at a time) -------- */
-      #loop-gif {
-        position: fixed !important;
-        top: 50%;
-        left: 50%;
-        width: 42vw !important;
-        max-width: 320px;
-        height: auto !important;
-        transform: translate(-50%, -50%);
-        z-index: 40;
-        pointer-events: none;
-        opacity: 0;
-        clip-path: circle(0% at 50% 50%);
-      }
-    </style>
-  </head>
+    #scan-hint {
+      position: absolute;
+      bottom: -44px;
+      left: 50%;
+      padding: 6px 16px;
+      border-radius: 999px;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.58);
+      color: #ffffff;
+      font-family: "Fredoka", sans-serif;
+      font-size: 14px;
+      white-space: nowrap;
+    }
 
-  <body>
-    <div id="entry-screen">
-      <div id="entry-sunburst"></div>
-      <h1 id="entry-title">MEMEVERSE</h1>
-      <div id="entry-subtitle">The Comedy Wall That Talks Back</div>
-      <p id="entry-hint">Point your camera at the wall, then tap below to begin (this also turns the sound on).</p>
-      <button id="entry-btn">Tap to Begin</button>
+    /* ------------------------------------------------------------- */
+    /* Error toast                                                   */
+    /* ------------------------------------------------------------- */
+
+    #ar-error-toast {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      z-index: 110;
+      display: none;
+      max-width: 86vw;
+      padding: 12px 18px;
+      border-radius: 14px;
+      transform: translateX(-50%);
+      background: rgba(20, 10, 8, 0.94);
+      color: #f7efd9;
+      font-family: "Fredoka", sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    #ar-error-toast.visible {
+      display: block;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Ambient scan particles                                        */
+    /* ------------------------------------------------------------- */
+
+    #ambient-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 44;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .ambient-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e8a62e;
+      opacity: 0;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* GIF overlay                                                   */
+    /* ------------------------------------------------------------- */
+
+    #loop-gif {
+      position: fixed !important;
+      top: 50%;
+      left: 50%;
+      z-index: 40;
+      width: 42vw !important;
+      max-width: 320px;
+      height: auto !important;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0;
+      clip-path: circle(0% at 50% 50%);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Entry screen -->
+  <div id="entry-screen">
+    <div id="entry-sunburst"></div>
+
+    <h1 id="entry-title">MEMEVERSE</h1>
+
+    <div id="entry-subtitle">
+      The Comedy Wall That Talks Back
     </div>
 
-    <div id="scan-hud">
-      <div id="scan-frame">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-        <div id="scan-hint">Point at a face on the wall</div>
+    <p id="entry-hint">
+      Point your camera at the wall, then tap below to begin.
+      This also enables sound.
+    </p>
+
+    <button id="entry-btn" type="button">
+      Tap to Begin
+    </button>
+  </div>
+
+  <!-- Scan interface -->
+  <div id="scan-hud">
+    <div id="scan-frame">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+
+      <div id="scan-hint">
+        Point at a face on the wall
       </div>
     </div>
+  </div>
 
-    <div id="ambient-layer"></div>
+  <div id="ambient-layer"></div>
 
-    <div id="ar-error-toast"></div>
+  <div id="ar-error-toast"></div>
 
-    <img id="loop-gif" src="" alt="" />
+  <img id="loop-gif" src="" alt="" />
 
-    <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind;"
-      color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
-      vr-mode-ui="enabled: false"
-      xr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      embedded
+  <!-- MindAR Scene -->
+  <a-scene
+    id="ar-scene"
+    mindar-image="
+      imageTargetSrc: ./targets.mind;
+      uiLoading: no;
+      uiScanning: no;
+      uiError: no;
+      filterMinCF: 0.0001;
+      filterBeta: 0.001;
+    "
+    color-space="sRGB"
+    renderer="
+      alpha: true;
+      antialias: true;
+      colorManagement: true;
+      physicallyCorrectLights: true;
+    "
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+  >
+    <a-assets timeout="10000">
+      <video
+        id="video"
+        src="./video.mp4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+    </a-assets>
+
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false"
+      active="true"
+      raycaster="objects: .clickable"
+      cursor="fuse: false; rayOrigin: mouse"
+    ></a-camera>
+
+    <a-entity
+      id="target-0"
+      mindar-image-target="targetIndex: 0"
     >
-      <a-assets>
-        <video
-          id="video"
-          src="./video.mp4"
-          preload="auto"
-          loop="true"
-          crossorigin="anonymous"
-          playsinline
-          webkit-playsinline
-          muted
-        ></video>
-      </a-assets>
+      <a-entity
+        id="comic-frame"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
 
-      <a-camera
+      <a-video
+        id="video-entity"
+        class="clickable"
+        src="#video"
+        width="1"
+        height="0.55"
         position="0 0 0"
-        look-controls="enabled: false"
-        raycaster="objects: .clickable"
-        cursor="fuse: false; rayOrigin: mouse"
-      ></a-camera>
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+  </a-scene>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <!-- Comic-card frame — sits BEHIND the video (z: -0.015) with a
-             transparent cutout exactly matching the video's bounds, so the
-             two surfaces never occupy the same depth at the same pixel.
-             depthWrite is also disabled on it (see comic-frame component)
-             as a second safety net against z-fighting/flicker. -->
-        <a-entity
-          comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
-          position="0 0 -0.015"
-        ></a-entity>
+  <script>
+    const sceneEl = document.querySelector("#ar-scene");
+    const video = document.querySelector("#video");
+    const targetEntity = document.querySelector("#target-0");
 
-        <a-video
-          id="video-entity"
-          class="clickable"
-          src="#video"
-          width="1"
-          height="0.55"
-          position="0 0 0"
-          rotation="0 0 0"
-        ></a-video>
-      </a-entity>
-    </a-scene>
+    const entryScreen = document.querySelector("#entry-screen");
+    const entryBtn = document.querySelector("#entry-btn");
 
-    <script>
-      const video = document.querySelector("#video");
-      const targetEntity = document.querySelector("[mindar-image-target]");
-      const entryScreen = document.querySelector("#entry-screen");
-      const entryBtn = document.querySelector("#entry-btn");
-      const scanHud = document.querySelector("#scan-hud");
-      const errorToast = document.querySelector("#ar-error-toast");
-      const sceneEl = document.querySelector("a-scene");
-      const frameEntity = document.querySelector("[comic-frame]");
-      const videoEntity = document.querySelector("#video-entity");
-      const ambientLayer = document.querySelector("#ambient-layer");
+    const scanHud = document.querySelector("#scan-hud");
+    const errorToast = document.querySelector("#ar-error-toast");
 
-      // ------------------------------------------------------------------
-      // SOUND DESIGN — short synthesized UI stings via Web Audio API.
-      // No external mp3/wav files needed (nothing to go missing/mispath),
-      // and it reuses the SAME AudioContext the tap-to-begin gesture
-      // already unlocks, so these are guaranteed allowed to play.
-      // ------------------------------------------------------------------
-      let audioCtx = null;
-      function getAudioCtx() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        return audioCtx;
+    const frameEntity = document.querySelector("#comic-frame");
+    const videoEntity = document.querySelector("#video-entity");
+
+    const ambientLayer = document.querySelector("#ambient-layer");
+    const loopGifEl = document.querySelector("#loop-gif");
+
+    let hasStartedAR = false;
+    let targetIsVisible = false;
+
+    /* ------------------------------------------------------------- */
+    /* Web Audio UI sounds                                           */
+    /* ------------------------------------------------------------- */
+
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
       }
 
-      function playTone({ freq = 880, endFreq = null, duration = 0.2, type = "triangle", volume = 0.25 }) {
+      return audioCtx;
+    }
+
+    function playTone({
+      freq = 880,
+      endFreq = null,
+      duration = 0.2,
+      type = "triangle",
+      volume = 0.25
+    }) {
+      const ctx = getAudioCtx();
+
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(
+        freq,
+        ctx.currentTime
+      );
+
+      if (endFreq) {
+        oscillator.frequency.exponentialRampToValueAtTime(
+          endFreq,
+          ctx.currentTime + duration * 0.6
+        );
+      }
+
+      gain.gain.setValueAtTime(
+        0.0001,
+        ctx.currentTime
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        volume,
+        ctx.currentTime + 0.02
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + duration
+      );
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + duration + 0.05);
+    }
+
+    function playTapSound() {
+      playTone({
+        freq: 420,
+        endFreq: 620,
+        duration: 0.15,
+        type: "sine",
+        volume: 0.2
+      });
+    }
+
+    function playLockOnChime() {
+      playTone({
+        freq: 700,
+        endFreq: 1100,
+        duration: 0.28,
+        type: "triangle",
+        volume: 0.28
+      });
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Entry screen animation                                        */
+    /* ------------------------------------------------------------- */
+
+    gsap.set(
+      "#entry-title, #entry-subtitle, #entry-hint, #entry-btn",
+      { opacity: 0 }
+    );
+
+    gsap.set("#entry-title", {
+      scale: 0.7
+    });
+
+    gsap.to("#entry-sunburst", {
+      rotate: 360,
+      duration: 50,
+      repeat: -1,
+      ease: "none"
+    });
+
+    gsap.timeline()
+      .to(
+        "#entry-title",
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          ease: "back.out(1.6)"
+        },
+        0.1
+      )
+      .to(
+        "#entry-subtitle",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.4
+      )
+      .to(
+        "#entry-hint",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.6
+      )
+      .to(
+        "#entry-btn",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.75
+      );
+
+    /* ------------------------------------------------------------- */
+    /* MindAR events                                                 */
+    /* ------------------------------------------------------------- */
+
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MEMEVERSE: MindAR is ready.");
+      errorToast.classList.remove("visible");
+    });
+
+    sceneEl.addEventListener("arError", (event) => {
+      console.error("MEMEVERSE: MindAR camera error:", event.detail);
+
+      errorToast.textContent =
+        "Camera could not start. Allow camera permission and open this site using HTTPS or localhost.";
+
+      errorToast.classList.add("visible");
+    });
+
+    /* ------------------------------------------------------------- */
+    /* Start AR after the user gesture                               */
+    /* ------------------------------------------------------------- */
+
+    entryBtn.addEventListener("click", async () => {
+      try {
         const ctx = getAudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration * 0.6);
-        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duration + 0.05);
-      }
 
-      const playTapSound = () => playTone({ freq: 420, endFreq: 620, duration: 0.15, type: "sine", volume: 0.2 });
-      const playLockOnChime = () => playTone({ freq: 700, endFreq: 1100, duration: 0.28, type: "triangle", volume: 0.28 });
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
 
-      // ------------------------------------------------------------------
-      // ENTRY SCREEN — branded splash instead of a blank/black wait.
-      // ------------------------------------------------------------------
-      gsap.set("#entry-title, #entry-subtitle, #entry-hint, #entry-btn", { opacity: 0 });
-      gsap.set("#entry-title", { scale: 0.7 });
-      gsap.to("#entry-sunburst", { rotate: 360, duration: 50, repeat: -1, ease: "none" });
-
-      gsap.timeline()
-        .to("#entry-title", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.1)
-        .to("#entry-subtitle", { opacity: 1, duration: 0.4 }, 0.4)
-        .to("#entry-hint", { opacity: 1, duration: 0.4 }, 0.6)
-        .to("#entry-btn", { opacity: 1, duration: 0.4 }, 0.75);
-
-      entryBtn.addEventListener("click", () => {
-        getAudioCtx().resume?.();
         playTapSound();
 
+        /*
+          Unlock your meme video's audio permission.
+          It briefly plays during the tap, then immediately pauses.
+        */
         video.muted = false;
-        video.play().catch(() => {
-          // fine if this fails here — targetFound will retry play()
-        });
+
+        try {
+          await video.play();
+          video.pause();
+          video.currentTime = 0;
+        } catch (videoError) {
+          console.warn(
+            "MEMEVERSE: Video unlock was blocked, will retry on target found.",
+            videoError
+          );
+        }
+
+        /*
+          MindAR normally begins automatically after scene initialization.
+          This starts it only if it has not begun yet.
+        */
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
+
+        if (
+          mindarSystem &&
+          !hasStartedAR
+        ) {
+          hasStartedAR = true;
+
+          try {
+            await mindarSystem.start();
+          } catch (startError) {
+            console.warn(
+              "MEMEVERSE: MindAR may already be running.",
+              startError
+            );
+          }
+        }
 
         gsap.to("#entry-screen", {
           opacity: 0,
           scale: 1.05,
           duration: 0.4,
           ease: "power1.in",
+
           onComplete: () => {
             entryScreen.classList.add("hidden");
-            scanHud.classList.add("visible");
-            startAmbientParticles();
+
+            if (!targetIsVisible) {
+              scanHud.classList.add("visible");
+              startAmbientParticles();
+            }
           }
         });
-      });
+      } catch (error) {
+        console.error("MEMEVERSE: Start error:", error);
 
-      // ------------------------------------------------------------------
-      // CAMERA ERROR — a small persistent toast rather than a full-screen
-      // black-out, so the reason for the failure is actually visible.
-      // ------------------------------------------------------------------
-      sceneEl.addEventListener("arError", () => {
         errorToast.textContent =
-          "Camera couldn't start. Make sure you're on HTTPS (or localhost) " +
-          "and camera permission is allowed for this site, then reload.";
+          "Could not open the camera. Please allow camera permission, then reload.";
+
         errorToast.classList.add("visible");
-      });
+      }
+    });
 
-      // ------------------------------------------------------------------
-      // MOTION ON ENTRY — a single choreographed reveal instead of the
-      // frame/video/GIF all just appearing independently. Sequence:
-      // frame pops in -> video pops in + starts playing -> first GIF
-      // iris-wipes in, ~120ms apart via one GSAP timeline.
-      // ------------------------------------------------------------------
-      function revealSequence() {
-        if (frameEntity?.object3D) {
-          gsap.fromTo(frameEntity.object3D.scale,
-            { x: 0.001, y: 0.001, z: 0.001 },
-            { x: 1, y: 1, z: 1, duration: 0.45, ease: "elastic.out(1, 0.6)" }
-          );
-        }
-        if (videoEntity?.object3D) {
-          gsap.fromTo(videoEntity.object3D.scale,
-            { x: 0.001, y: 0.001, z: 0.001 },
-            { x: 1, y: 1, z: 1, duration: 0.45, delay: 0.1, ease: "elastic.out(1, 0.6)" }
-          );
-        }
-        gsap.delayedCall(0.22, () => startGifLoop());
+    /* ------------------------------------------------------------- */
+    /* Target reveal and hide animation                              */
+    /* ------------------------------------------------------------- */
+
+    function revealSequence() {
+      if (frameEntity && frameEntity.object3D) {
+        gsap.killTweensOf(frameEntity.object3D.scale);
+
+        gsap.fromTo(
+          frameEntity.object3D.scale,
+          {
+            x: 0.001,
+            y: 0.001,
+            z: 0.001
+          },
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+            duration: 0.45,
+            ease: "elastic.out(1, 0.6)"
+          }
+        );
       }
 
-      function hideSequence() {
-        if (frameEntity?.object3D) {
-          gsap.to(frameEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
-        }
-        if (videoEntity?.object3D) {
-          gsap.to(videoEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
-        }
-        stopGifLoop();
+      if (videoEntity && videoEntity.object3D) {
+        gsap.killTweensOf(videoEntity.object3D.scale);
+
+        gsap.fromTo(
+          videoEntity.object3D.scale,
+          {
+            x: 0.001,
+            y: 0.001,
+            z: 0.001
+          },
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+            delay: 0.1,
+            duration: 0.45,
+            ease: "elastic.out(1, 0.6)"
+          }
+        );
       }
 
-      targetEntity.addEventListener("targetFound", () => {
-        video.currentTime = 0;
-        video.play().catch(e => console.log("Autoplay prevented:", e));
-        playLockOnChime(); // sound-first — fires immediately, doesn't wait on video buffering
-        scanHud.classList.remove("visible");
-        stopAmbientParticles();
-        revealSequence();
+      gsap.delayedCall(0.22, () => {
+        if (targetIsVisible) {
+          startGifLoop();
+        }
       });
+    }
 
-      targetEntity.addEventListener("targetLost", () => {
-        video.pause();
-        hideSequence();
+    function hideSequence() {
+      if (frameEntity && frameEntity.object3D) {
+        gsap.killTweensOf(frameEntity.object3D.scale);
+
+        gsap.to(frameEntity.object3D.scale, {
+          x: 0.001,
+          y: 0.001,
+          z: 0.001,
+          duration: 0.2,
+          ease: "power1.in"
+        });
+      }
+
+      if (videoEntity && videoEntity.object3D) {
+        gsap.killTweensOf(videoEntity.object3D.scale);
+
+        gsap.to(videoEntity.object3D.scale, {
+          x: 0.001,
+          y: 0.001,
+          z: 0.001,
+          duration: 0.2,
+          ease: "power1.in"
+        });
+      }
+
+      stopGifLoop();
+    }
+
+    targetEntity.addEventListener("targetFound", async () => {
+      console.log("MEMEVERSE: Target found.");
+
+      targetIsVisible = true;
+
+      scanHud.classList.remove("visible");
+      stopAmbientParticles();
+
+      video.currentTime = 0;
+
+      try {
+        await video.play();
+      } catch (error) {
+        console.warn(
+          "MEMEVERSE: Meme video playback blocked:",
+          error
+        );
+      }
+
+      playLockOnChime();
+      revealSequence();
+    });
+
+    targetEntity.addEventListener("targetLost", () => {
+      console.log("MEMEVERSE: Target lost.");
+
+      targetIsVisible = false;
+
+      video.pause();
+
+      hideSequence();
+
+      if (entryScreen.classList.contains("hidden")) {
         scanHud.classList.add("visible");
         startAmbientParticles();
+      }
+    });
+
+    /* ------------------------------------------------------------- */
+    /* GIF loop                                                      */
+    /* ------------------------------------------------------------- */
+
+    const GIF_SETS = {
+      0: [
+        "Gifs/1.GIF",
+        "Gifs/2.GIF",
+        "Gifs/3.GIF",
+        "Gifs/4.GIF",
+        "Gifs/5.GIF",
+        "Gifs/6.GIF",
+        "Gifs/7.GIF"
+      ]
+    };
+
+    const GIF_FRAME_MS = 500;
+
+    let gifTimer = null;
+    let gifIndex = 0;
+
+    const irisProxy = {
+      r: 0
+    };
+
+    loopGifEl.addEventListener("error", () => {
+      console.warn(
+        `MEMEVERSE: GIF failed to load: ${loopGifEl.src}`
+      );
+
+      gsap.killTweensOf(irisProxy);
+
+      irisProxy.r = 0;
+
+      loopGifEl.style.opacity = "0";
+      loopGifEl.style.clipPath =
+        "circle(0% at 50% 50%)";
+    });
+
+    function showNextGifFrame(gifList) {
+      if (!gifList || gifList.length === 0) {
+        return;
+      }
+
+      const source = gifList[gifIndex % gifList.length];
+
+      gifIndex += 1;
+
+      loopGifEl.src = source;
+      loopGifEl.style.opacity = "1";
+
+      gsap.killTweensOf(irisProxy);
+
+      irisProxy.r = 0;
+
+      gsap.to(irisProxy, {
+        r: 75,
+        duration: 0.3,
+        ease: "power2.out",
+
+        onUpdate: () => {
+          loopGifEl.style.clipPath =
+            `circle(${irisProxy.r}% at 50% 50%)`;
+        }
       });
+    }
 
-      // ------------------------------------------------------------------
-      // LOOPING GIFS — your own local files. One <img> element cycles
-      // through the assigned list on a simple crossfade, continuously,
-      // for as long as the target stays tracked. Only one frame is ever
-      // visible at a time, so nothing overlaps.
-      // ------------------------------------------------------------------
+    function startGifLoop() {
+      const gifList = GIF_SETS[0];
 
-      // Map each targetIndex to the GIFs that should loop for it.
-      // Right now there's only target 0 in this file — assign whichever
-      // of your 7 GIFs you want for it. When you add more targets later,
-      // just add more keys here (e.g. 1: ["Gifs/4.GIF","Gifs/5.GIF"]).
-      const GIF_SETS = {
-        0: ["Gifs/1.GIF", "Gifs/2.GIF", "Gifs/3.GIF", "Gifs/4.GIF", "Gifs/5.GIF", "Gifs/6.GIF", "Gifs/7.GIF"]
-      };
+      if (!gifList || gifList.length === 0) {
+        return;
+      }
 
-      const GIF_FRAME_MS = 500; // how long each gif stays up before cycling to the next
+      stopGifLoop();
 
-      const loopGifEl = document.querySelector("#loop-gif");
-      let gifTimer = null;
-      let gifIndex = 0;
-      const irisProxy = { r: 0 }; // proxy value animated, then written to clip-path each tick
+      gifIndex = 0;
 
-      // If a GIF fails to load (wrong path/filename/case), hide it cleanly
-      // instead of showing the browser's broken-image icon + outline box —
-      // that box-with-icon-in-the-corner look is exactly what a 404 image
-      // renders as, which is what showed up in your test screenshot.
-      loopGifEl.addEventListener("error", () => {
-        console.warn(
-          `MEMEVERSE: GIF failed to load -> "${loopGifEl.src}". ` +
-          `Check the file exists at that exact path (case-sensitive) ` +
-          `relative to index.html.`
+      showNextGifFrame(gifList);
+
+      gifTimer = window.setInterval(() => {
+        if (targetIsVisible) {
+          showNextGifFrame(gifList);
+        }
+      }, GIF_FRAME_MS);
+    }
+
+    function stopGifLoop() {
+      if (gifTimer) {
+        window.clearInterval(gifTimer);
+        gifTimer = null;
+      }
+
+      gsap.killTweensOf(irisProxy);
+
+      gsap.to(irisProxy, {
+        r: 0,
+        duration: 0.2,
+        ease: "power1.in",
+
+        onUpdate: () => {
+          loopGifEl.style.clipPath =
+            `circle(${irisProxy.r}% at 50% 50%)`;
+        },
+
+        onComplete: () => {
+          loopGifEl.style.opacity = "0";
+        }
+      });
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Ambient particles                                             */
+    /* ------------------------------------------------------------- */
+
+    let ambientTimer = null;
+
+    function spawnAmbientDot() {
+      const dot = document.createElement("div");
+
+      dot.className = "ambient-dot";
+
+      const x =
+        window.innerWidth *
+        (0.3 + Math.random() * 0.4);
+
+      const startY = window.innerHeight * 0.75;
+
+      dot.style.left = `${x}px`;
+      dot.style.top = `${startY}px`;
+
+      ambientLayer.appendChild(dot);
+
+      gsap.timeline({
+        onComplete: () => {
+          dot.remove();
+        }
+      })
+        .to(
+          dot,
+          {
+            opacity: 0.6,
+            duration: 0.4
+          },
+          0
+        )
+        .to(
+          dot,
+          {
+            y: -180 - Math.random() * 100,
+            x: `+=${(Math.random() - 0.5) * 60}`,
+            duration: 2.4,
+            ease: "power1.out"
+          },
+          0
+        )
+        .to(
+          dot,
+          {
+            opacity: 0,
+            duration: 0.5
+          },
+          1.9
         );
-        gsap.killTweensOf(irisProxy);
-        irisProxy.r = 0;
-        loopGifEl.style.clipPath = "circle(0% at 50% 50%)";
-      });
+    }
 
-      function showNextGifFrame(gifList) {
-        const src = gifList[gifIndex % gifList.length];
-        gifIndex++;
-
-        loopGifEl.src = src;
-        loopGifEl.style.opacity = 1;
-
-        // Iris wipe — the classic old-cartoon circular transition, fitting
-        // for a 90s-comedy theme, and it reads as far more "designed" than
-        // a flat opacity crossfade.
-        gsap.killTweensOf(irisProxy);
-        irisProxy.r = 0;
-        gsap.to(irisProxy, {
-          r: 75,
-          duration: 0.3,
-          ease: "power2.out",
-          onUpdate: () => {
-            loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
-          }
-        });
+    function startAmbientParticles() {
+      if (ambientTimer) {
+        return;
       }
 
-      function startGifLoop() {
-        const gifList = GIF_SETS[0]; // hardcoded to target 0 for this single-target file
-        if (!gifList || !gifList.length) return;
+      spawnAmbientDot();
 
-        stopGifLoop(); // safety: clear any previous loop first
-        gifIndex = 0;
-        showNextGifFrame(gifList);
-        gifTimer = setInterval(() => showNextGifFrame(gifList), GIF_FRAME_MS);
-      }
-
-      function stopGifLoop() {
-        if (gifTimer) {
-          clearInterval(gifTimer);
-          gifTimer = null;
-        }
-        gsap.killTweensOf(irisProxy);
-        gsap.to(irisProxy, {
-          r: 0,
-          duration: 0.2,
-          ease: "power1.in",
-          onUpdate: () => {
-            loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
-          }
-        });
-      }
-
-      // ------------------------------------------------------------------
-      // IDLE / AMBIENT STATE — while the scan HUD is showing (no target
-      // locked), drift a few faint branded particles upward through the
-      // frame so the "searching" state has some life to it, not just
-      // static corner brackets.
-      // ------------------------------------------------------------------
-      let ambientTimer = null;
-
-      function spawnAmbientDot() {
-        const dot = document.createElement("div");
-        dot.className = "ambient-dot";
-        const x = window.innerWidth * (0.3 + Math.random() * 0.4);
-        const startY = window.innerHeight * 0.75;
-        dot.style.left = `${x}px`;
-        dot.style.top = `${startY}px`;
-        ambientLayer.appendChild(dot);
-
-        gsap.timeline({ onComplete: () => dot.remove() })
-          .to(dot, { opacity: 0.6, duration: 0.4 }, 0)
-          .to(dot, { y: -180 - Math.random() * 100, x: `+=${(Math.random() - 0.5) * 60}`, duration: 2.4, ease: "power1.out" }, 0)
-          .to(dot, { opacity: 0, duration: 0.5 }, 1.9);
-      }
-
-      function startAmbientParticles() {
-        if (ambientTimer) return;
+      ambientTimer = window.setInterval(() => {
         spawnAmbientDot();
-        ambientTimer = setInterval(spawnAmbientDot, 700);
+      }, 700);
+    }
+
+    function stopAmbientParticles() {
+      if (ambientTimer) {
+        window.clearInterval(ambientTimer);
+        ambientTimer = null;
+      }
+    }
+
+    /* Start AR visuals hidden until target is found */
+    sceneEl.addEventListener("loaded", () => {
+      if (frameEntity && frameEntity.object3D) {
+        frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
       }
 
-      function stopAmbientParticles() {
-        if (ambientTimer) {
-          clearInterval(ambientTimer);
-          ambientTimer = null;
-        }
+      if (videoEntity && videoEntity.object3D) {
+        videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
       }
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
