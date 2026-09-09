@@ -527,10 +527,132 @@
     device-orientation-permission-ui="enabled: false"
     embedded
   >
-    <a-assets timeout="10000">
+    <a-assets timeout="20000">
+      <!-- 0: Brahmanandam -->
       <video
-        id="video"
-        src="./video.mp4"
+        id="video-0"
+        src="./video/Brahmanandam.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 1: Ali -->
+      <video
+        id="video-1"
+        src="./video/ali.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 2: Venu Madhav -->
+      <video
+        id="video-2"
+        src="./video/venumadhav.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 3: Jaya Prakash Reddy -->
+      <video
+        id="video-3"
+        src="./video/jayaprakesh.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 4: Babu Mohan -->
+      <video
+        id="video-4"
+        src="./video/babumohan.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 5: Ms Narayana -->
+      <video
+        id="video-5"
+        src="./video/msnarayana.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 6: Krishna Bhagavan -->
+      <video
+        id="video-6"
+        src="./video/krishnabagavan.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 7: Sunil -->
+      <video
+        id="video-7"
+        src="./video/sunil.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 8: Venala Kishore -->
+      <video
+        id="video-8"
+        src="./video/venalakishor.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 9: Sathya -->
+      <video
+        id="video-9"
+        src="./video/sathya.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 10: Sapthagiri -->
+      <video
+        id="video-10"
+        src="./video/Sapthagiri.MP4"
+        preload="auto"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+      <!-- 11: Priyadarshi -->
+      <video
+        id="video-11"
+        src="./video/priyadarshi.MP4"
         preload="auto"
         loop
         crossorigin="anonymous"
@@ -548,12 +670,13 @@
       cursor="fuse: false; rayOrigin: mouse"
     ></a-camera>
 
+    <!-- 0: Brahmanandam -->
     <a-entity
       id="target-0"
       mindar-image-target="targetIndex: 0"
     >
       <a-entity
-        id="comic-frame"
+        id="comic-frame-0"
         comic-frame="
           innerWidth: 1;
           innerHeight: 0.55;
@@ -563,9 +686,295 @@
       ></a-entity>
 
       <a-video
-        id="video-entity"
+        id="video-entity-0"
         class="clickable"
-        src="#video"
+        src="#video-0"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 1: Ali -->
+    <a-entity
+      id="target-1"
+      mindar-image-target="targetIndex: 1"
+    >
+      <a-entity
+        id="comic-frame-1"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-1"
+        class="clickable"
+        src="#video-1"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 2: Venu Madhav -->
+    <a-entity
+      id="target-2"
+      mindar-image-target="targetIndex: 2"
+    >
+      <a-entity
+        id="comic-frame-2"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-2"
+        class="clickable"
+        src="#video-2"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 3: Jaya Prakash Reddy -->
+    <a-entity
+      id="target-3"
+      mindar-image-target="targetIndex: 3"
+    >
+      <a-entity
+        id="comic-frame-3"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-3"
+        class="clickable"
+        src="#video-3"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 4: Babu Mohan -->
+    <a-entity
+      id="target-4"
+      mindar-image-target="targetIndex: 4"
+    >
+      <a-entity
+        id="comic-frame-4"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-4"
+        class="clickable"
+        src="#video-4"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 5: Ms Narayana -->
+    <a-entity
+      id="target-5"
+      mindar-image-target="targetIndex: 5"
+    >
+      <a-entity
+        id="comic-frame-5"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-5"
+        class="clickable"
+        src="#video-5"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 6: Krishna Bhagavan -->
+    <a-entity
+      id="target-6"
+      mindar-image-target="targetIndex: 6"
+    >
+      <a-entity
+        id="comic-frame-6"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-6"
+        class="clickable"
+        src="#video-6"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 7: Sunil -->
+    <a-entity
+      id="target-7"
+      mindar-image-target="targetIndex: 7"
+    >
+      <a-entity
+        id="comic-frame-7"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-7"
+        class="clickable"
+        src="#video-7"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 8: Venala Kishore -->
+    <a-entity
+      id="target-8"
+      mindar-image-target="targetIndex: 8"
+    >
+      <a-entity
+        id="comic-frame-8"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-8"
+        class="clickable"
+        src="#video-8"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 9: Sathya -->
+    <a-entity
+      id="target-9"
+      mindar-image-target="targetIndex: 9"
+    >
+      <a-entity
+        id="comic-frame-9"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-9"
+        class="clickable"
+        src="#video-9"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 10: Sapthagiri -->
+    <a-entity
+      id="target-10"
+      mindar-image-target="targetIndex: 10"
+    >
+      <a-entity
+        id="comic-frame-10"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-10"
+        class="clickable"
+        src="#video-10"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+        rotation="0 0 0"
+      ></a-video>
+    </a-entity>
+
+    <!-- 11: Priyadarshi -->
+    <a-entity
+      id="target-11"
+      mindar-image-target="targetIndex: 11"
+    >
+      <a-entity
+        id="comic-frame-11"
+        comic-frame="
+          innerWidth: 1;
+          innerHeight: 0.55;
+          borderScale: 1.14;
+        "
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-11"
+        class="clickable"
+        src="#video-11"
         width="1"
         height="0.55"
         position="0 0 0"
@@ -576,8 +985,6 @@
 
   <script>
     const sceneEl = document.querySelector("#ar-scene");
-    const video = document.querySelector("#video");
-    const targetEntity = document.querySelector("#target-0");
 
     const entryScreen = document.querySelector("#entry-screen");
     const entryBtn = document.querySelector("#entry-btn");
@@ -585,14 +992,38 @@
     const scanHud = document.querySelector("#scan-hud");
     const errorToast = document.querySelector("#ar-error-toast");
 
-    const frameEntity = document.querySelector("#comic-frame");
-    const videoEntity = document.querySelector("#video-entity");
-
     const ambientLayer = document.querySelector("#ambient-layer");
     const loopGifEl = document.querySelector("#loop-gif");
 
+    // One entry per comedian. Edit content.json-style config in ROSTER
+    // below to add/rename/swap comedians -- everything else (listeners,
+    // reveal animation, gif loop) is driven off this array.
+    const ROSTER = [
+      { index: 0, name: "Brahmanandam" },
+      { index: 1, name: "Ali" },
+      { index: 2, name: "Venu Madhav" },
+      { index: 3, name: "Jaya Prakash Reddy" },
+      { index: 4, name: "Babu Mohan" },
+      { index: 5, name: "Ms Narayana" },
+      { index: 6, name: "Krishna Bhagavan" },
+      { index: 7, name: "Sunil" },
+      { index: 8, name: "Venala Kishore" },
+      { index: 9, name: "Sathya" },
+      { index: 10, name: "Sapthagiri" },
+      { index: 11, name: "Priyadarshi" }
+    ];
+
+    const targets = ROSTER.map(({ index, name }) => ({
+      index,
+      name,
+      targetEntity: document.querySelector(`#target-${index}`),
+      video: document.querySelector(`#video-${index}`),
+      frameEntity: document.querySelector(`#comic-frame-${index}`),
+      videoEntity: document.querySelector(`#video-entity-${index}`)
+    }));
+
     let hasStartedAR = false;
-    let targetIsVisible = false;
+    let activeIndex = null; // which comedian (if any) is currently locked on
 
     /* ------------------------------------------------------------- */
     /* Web Audio UI sounds                                           */
@@ -767,20 +1198,26 @@
         playTapSound();
 
         /*
-          Unlock your meme video's audio permission.
-          It briefly plays during the tap, then immediately pauses.
+          Unlock audio permission for ALL 12 comedian clips at once.
+          Each briefly "plays" (silently, still muted=false but paused
+          again immediately) during this one tap -- browsers count each
+          successful play() as that element being user-activated, so
+          later play() calls from targetFound are allowed to have sound
+          too, without needing a fresh tap per comedian.
         */
-        video.muted = false;
-
-        try {
-          await video.play();
-          video.pause();
-          video.currentTime = 0;
-        } catch (videoError) {
-          console.warn(
-            "MEMEVERSE: Video unlock was blocked, will retry on target found.",
-            videoError
-          );
+        for (const t of targets) {
+          if (!t.video) continue;
+          t.video.muted = false;
+          try {
+            await t.video.play();
+            t.video.pause();
+            t.video.currentTime = 0;
+          } catch (videoError) {
+            console.warn(
+              `MEMEVERSE: Audio unlock blocked for "${t.name}", will retry on target found.`,
+              videoError
+            );
+          }
         }
 
         /*
@@ -814,7 +1251,7 @@
           onComplete: () => {
             entryScreen.classList.add("hidden");
 
-            if (!targetIsVisible) {
+            if (activeIndex === null) {
               scanHud.classList.add("visible");
               startAmbientParticles();
             }
@@ -834,12 +1271,12 @@
     /* Target reveal and hide animation                              */
     /* ------------------------------------------------------------- */
 
-    function revealSequence() {
-      if (frameEntity && frameEntity.object3D) {
-        gsap.killTweensOf(frameEntity.object3D.scale);
+    function revealSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
 
         gsap.fromTo(
-          frameEntity.object3D.scale,
+          t.frameEntity.object3D.scale,
           {
             x: 0.001,
             y: 0.001,
@@ -855,11 +1292,11 @@
         );
       }
 
-      if (videoEntity && videoEntity.object3D) {
-        gsap.killTweensOf(videoEntity.object3D.scale);
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
 
         gsap.fromTo(
-          videoEntity.object3D.scale,
+          t.videoEntity.object3D.scale,
           {
             x: 0.001,
             y: 0.001,
@@ -877,17 +1314,17 @@
       }
 
       gsap.delayedCall(0.22, () => {
-        if (targetIsVisible) {
-          startGifLoop();
+        if (activeIndex === t.index) {
+          startGifLoop(t.index);
         }
       });
     }
 
-    function hideSequence() {
-      if (frameEntity && frameEntity.object3D) {
-        gsap.killTweensOf(frameEntity.object3D.scale);
+    function hideSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
 
-        gsap.to(frameEntity.object3D.scale, {
+        gsap.to(t.frameEntity.object3D.scale, {
           x: 0.001,
           y: 0.001,
           z: 0.001,
@@ -896,10 +1333,10 @@
         });
       }
 
-      if (videoEntity && videoEntity.object3D) {
-        gsap.killTweensOf(videoEntity.object3D.scale);
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
 
-        gsap.to(videoEntity.object3D.scale, {
+        gsap.to(t.videoEntity.object3D.scale, {
           x: 0.001,
           y: 0.001,
           z: 0.001,
@@ -911,59 +1348,82 @@
       stopGifLoop();
     }
 
-    targetEntity.addEventListener("targetFound", async () => {
-      console.log("MEMEVERSE: Target found.");
-
-      targetIsVisible = true;
-
-      scanHud.classList.remove("visible");
-      stopAmbientParticles();
-
-      video.currentTime = 0;
-
-      try {
-        await video.play();
-      } catch (error) {
-        console.warn(
-          "MEMEVERSE: Meme video playback blocked:",
-          error
-        );
+    // One pair of listeners per comedian. Only ONE comedian is treated as
+    // "active" at a time (activeIndex) -- if two targets were somehow
+    // found in the same frame (unlikely on a single wall photo, but
+    // possible with a wide-angle lens catching two faces), the first one
+    // found wins and a second targetFound is ignored until the first is
+    // lost. This avoids two videos/sounds firing simultaneously.
+    targets.forEach((t) => {
+      if (!t.targetEntity) {
+        console.warn(`MEMEVERSE: missing #target-${t.index} in the DOM (${t.name}) - check the HTML.`);
+        return;
       }
 
-      playLockOnChime();
-      revealSequence();
-    });
+      t.targetEntity.addEventListener("targetFound", async () => {
+        if (activeIndex !== null && activeIndex !== t.index) {
+          return; // another comedian is already active - ignore
+        }
 
-    targetEntity.addEventListener("targetLost", () => {
-      console.log("MEMEVERSE: Target lost.");
+        console.log(`MEMEVERSE: Target found - ${t.name} (index ${t.index}).`);
 
-      targetIsVisible = false;
+        activeIndex = t.index;
 
-      video.pause();
+        scanHud.classList.remove("visible");
+        stopAmbientParticles();
 
-      hideSequence();
+        if (t.video) {
+          t.video.currentTime = 0;
+          try {
+            await t.video.play();
+          } catch (error) {
+            console.warn(`MEMEVERSE: Playback blocked for "${t.name}":`, error);
+          }
+        }
 
-      if (entryScreen.classList.contains("hidden")) {
-        scanHud.classList.add("visible");
-        startAmbientParticles();
-      }
+        playLockOnChime();
+        revealSequence(t);
+      });
+
+      t.targetEntity.addEventListener("targetLost", () => {
+        if (activeIndex !== t.index) return; // wasn't the active one - ignore
+
+        console.log(`MEMEVERSE: Target lost - ${t.name} (index ${t.index}).`);
+
+        activeIndex = null;
+
+        if (t.video) t.video.pause();
+
+        hideSequence(t);
+
+        if (entryScreen.classList.contains("hidden")) {
+          scanHud.classList.add("visible");
+          startAmbientParticles();
+        }
+      });
     });
 
     /* ------------------------------------------------------------- */
     /* GIF loop                                                      */
     /* ------------------------------------------------------------- */
 
-    const GIF_SETS = {
-      0: [
-        "Gifs/1.gif",
-        "Gifs/2.gif",
-        "Gifs/3.gif",
-        "Gifs/4.gif",
-        "Gifs/5.gif",
-        "Gifs/6.gif",
-        "Gifs/7.gif"
-      ]
-    };
+    // Default GIF set shared by every comedian unless overridden below.
+    // To give a specific comedian their own GIFs, add/replace that
+    // targetIndex's array, e.g. GIF_SETS[3] = ["Gifs/special-1.GIF", ...].
+    const DEFAULT_GIFS = [
+      "Gifs/1.GIF",
+      "Gifs/2.GIF",
+      "Gifs/3.GIF",
+      "Gifs/4.GIF",
+      "Gifs/5.GIF",
+      "Gifs/6.GIF",
+      "Gifs/7.GIF"
+    ];
+
+    const GIF_SETS = {};
+    targets.forEach((t) => {
+      GIF_SETS[t.index] = DEFAULT_GIFS;
+    });
 
     const GIF_FRAME_MS = 500;
 
@@ -1016,8 +1476,8 @@
       });
     }
 
-    function startGifLoop() {
-      const gifList = GIF_SETS[0];
+    function startGifLoop(index) {
+      const gifList = GIF_SETS[index];
 
       if (!gifList || gifList.length === 0) {
         return;
@@ -1030,7 +1490,7 @@
       showNextGifFrame(gifList);
 
       gifTimer = window.setInterval(() => {
-        if (targetIsVisible) {
+        if (activeIndex === index) {
           showNextGifFrame(gifList);
         }
       }, GIF_FRAME_MS);
@@ -1136,13 +1596,14 @@
 
     /* Start AR visuals hidden until target is found */
     sceneEl.addEventListener("loaded", () => {
-      if (frameEntity && frameEntity.object3D) {
-        frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
-      }
-
-      if (videoEntity && videoEntity.object3D) {
-        videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
-      }
+      targets.forEach((t) => {
+        if (t.frameEntity && t.frameEntity.object3D) {
+          t.frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
+        }
+        if (t.videoEntity && t.videoEntity.object3D) {
+          t.videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
+        }
+      });
     });
   </script>
 </body>
