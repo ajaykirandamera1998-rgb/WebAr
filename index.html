@@ -8,6 +8,9 @@
     content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
   />
 
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#241a14" />
+
   <title>MEMEVERSE</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -60,6 +63,7 @@
           ctx.closePath();
         }
 
+        /* Cream comic card */
         ctx.save();
         ctx.shadowColor = "rgba(36, 26, 20, 0.35)";
         ctx.shadowBlur = canvas.width * 0.025;
@@ -77,6 +81,7 @@
         ctx.fill();
         ctx.restore();
 
+        /* Outer black outline */
         roundedRectPath(
           0,
           0,
@@ -89,6 +94,7 @@
         ctx.strokeStyle = "#241A14";
         ctx.stroke();
 
+        /* Transparent opening for the video */
         ctx.save();
         ctx.globalCompositeOperation = "destination-out";
 
@@ -103,6 +109,7 @@
         ctx.fill();
         ctx.restore();
 
+        /* Inner outline */
         roundedRectPath(
           mx,
           my,
@@ -117,7 +124,10 @@
 
         const texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
-        texture.colorSpace = THREE.SRGBColorSpace;
+
+        if (THREE.SRGBColorSpace) {
+          texture.colorSpace = THREE.SRGBColorSpace;
+        }
 
         const geometry = new THREE.PlaneGeometry(outerW, outerH);
 
@@ -152,46 +162,68 @@
       touch-action: manipulation;
     }
 
-    video.mindar-video {
+    /*
+      MindAR creates a camera video element outside the a-scene.
+      These rules ensure it stays behind your AR canvas.
+    */
+    body > video,
+    video.mindar-video,
+    video.mindar-video-element {
       position: fixed !important;
       inset: 0 !important;
+      z-index: 0 !important;
+
+      display: block !important;
+
       width: 100vw !important;
       height: 100vh !important;
+
       min-width: 100vw !important;
       min-height: 100vh !important;
+
       object-fit: cover !important;
-      z-index: 0 !important;
-      display: block !important;
+      object-position: center !important;
+
       background: transparent !important;
     }
 
+    body > canvas,
     canvas.mindar-canvas {
       position: fixed !important;
       inset: 0 !important;
+      z-index: 1 !important;
+
+      display: block !important;
+
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 1 !important;
-      display: block !important;
+
       pointer-events: none !important;
     }
 
     a-scene {
       position: fixed !important;
       inset: 0 !important;
+      z-index: 2 !important;
+
+      display: block !important;
+
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 2 !important;
-      display: block !important;
+
       background: transparent !important;
     }
 
     .a-canvas {
       position: fixed !important;
       inset: 0 !important;
+      z-index: 2 !important;
+
+      display: block !important;
+
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 2 !important;
-      display: block !important;
+
       background: transparent !important;
     }
 
@@ -210,12 +242,15 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      overflow: hidden;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+
+      overflow: hidden;
       padding: 24px;
+
       text-align: center;
       background: #f2e6c9;
     }
@@ -228,26 +263,33 @@
       position: absolute;
       top: 50%;
       left: 50%;
+
       width: 220vw;
       height: 220vw;
+
       border-radius: 50%;
       transform: translate(-50%, -50%);
+
       background: repeating-conic-gradient(
         #e8a62e 0deg 9deg,
         #c1432e 9deg 18deg
       );
+
       opacity: 0.22;
     }
 
     #entry-title {
       position: relative;
       margin: 0;
+
       color: #7a2426;
+
       font-family: "Baloo 2", sans-serif;
       font-size: clamp(48px, 15vw, 72px);
       font-weight: 800;
       letter-spacing: 1px;
       line-height: 0.95;
+
       text-shadow:
         4px 4px 0 #e8a62e,
         7px 7px 0 #241a14;
@@ -255,12 +297,16 @@
 
     #entry-subtitle {
       position: relative;
+
       margin-top: 14px;
       padding: 7px 22px;
+
       border: 3px solid #241a14;
       border-radius: 999px;
+
       background: #1b6b67;
       color: #f7efd9;
+
       font-family: "Fredoka", sans-serif;
       font-size: 16px;
       font-weight: 600;
@@ -268,33 +314,48 @@
 
     #entry-hint {
       position: relative;
+
       max-width: 300px;
       margin: 26px 0 0;
+
       color: #241a14;
+
       font-family: "Fredoka", sans-serif;
       font-size: 14px;
       line-height: 1.5;
+
       opacity: 0.8;
     }
 
     #entry-btn {
       position: relative;
+
       margin-top: 22px;
       padding: 14px 38px;
+
       border: 3px solid #241a14;
       border-radius: 999px;
+
       background: #e8a62e;
       color: #241a14;
+
       box-shadow: 4px 4px 0 #241a14;
+
       font-family: "Fredoka", sans-serif;
       font-size: 17px;
       font-weight: 600;
+
       cursor: pointer;
     }
 
     #entry-btn:active {
       transform: translate(3px, 3px);
       box-shadow: 1px 1px 0 #241a14;
+    }
+
+    #entry-btn:disabled {
+      opacity: 0.72;
+      cursor: wait;
     }
 
     /* ------------------------------------------------------------- */
@@ -305,10 +366,13 @@
       position: fixed;
       inset: 0;
       z-index: 45;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
       pointer-events: none;
+
       opacity: 0;
       transition: opacity 0.35s ease;
     }
@@ -319,16 +383,21 @@
 
     #scan-frame {
       position: relative;
+
       width: 58vw;
       max-width: 320px;
+
       aspect-ratio: 1 / 1.15;
     }
 
     #scan-frame .corner {
       position: absolute;
+
       width: 34px;
       height: 34px;
+
       border: 4px solid #e8a62e;
+
       animation: scan-pulse 1.8s ease-in-out infinite;
     }
 
@@ -346,32 +415,40 @@
     #scan-frame .tl {
       top: 0;
       left: 0;
+
       border-right: none;
       border-bottom: none;
+
       border-radius: 10px 0 0 0;
     }
 
     #scan-frame .tr {
       top: 0;
       right: 0;
+
       border-bottom: none;
       border-left: none;
+
       border-radius: 0 10px 0 0;
     }
 
     #scan-frame .bl {
       bottom: 0;
       left: 0;
+
       border-top: none;
       border-right: none;
+
       border-radius: 0 0 0 10px;
     }
 
     #scan-frame .br {
       right: 0;
       bottom: 0;
+
       border-top: none;
       border-left: none;
+
       border-radius: 0 0 10px 0;
     }
 
@@ -379,11 +456,15 @@
       position: absolute;
       bottom: -44px;
       left: 50%;
+
       padding: 6px 16px;
+
       border-radius: 999px;
       transform: translateX(-50%);
+
       background: rgba(0, 0, 0, 0.58);
       color: #ffffff;
+
       font-family: "Fredoka", sans-serif;
       font-size: 14px;
       white-space: nowrap;
@@ -398,13 +479,18 @@
       bottom: 26px;
       left: 50%;
       z-index: 110;
+
       display: none;
+
       max-width: 86vw;
       padding: 12px 18px;
+
       border-radius: 14px;
       transform: translateX(-50%);
+
       background: rgba(20, 10, 8, 0.94);
       color: #f7efd9;
+
       font-family: "Fredoka", sans-serif;
       font-size: 13px;
       line-height: 1.5;
@@ -416,34 +502,39 @@
     }
 
     /* ------------------------------------------------------------- */
-    /* Ambient scan particles                                        */
+    /* Ambient particles                                             */
     /* ------------------------------------------------------------- */
 
     #ambient-layer {
       position: fixed;
       inset: 0;
       z-index: 44;
+
       overflow: hidden;
       pointer-events: none;
     }
 
     .ambient-dot {
       position: absolute;
+
       width: 6px;
       height: 6px;
+
       border-radius: 50%;
       background: #e8a62e;
+
       opacity: 0;
     }
 
     /* ------------------------------------------------------------- */
-    /* GIF overlay                                                   */
+    /* GIF overlay — top-left                                        */
     /* ------------------------------------------------------------- */
 
     #loop-gif {
       position: fixed !important;
       top: 18px;
       left: 18px;
+      z-index: 40;
 
       width: 18vw !important;
       max-width: 115px;
@@ -453,15 +544,15 @@
 
       transform: none;
 
-      z-index: 40;
       pointer-events: none;
-
       opacity: 0;
+
       -webkit-clip-path: circle(0% at 50% 50%);
       clip-path: circle(0% at 50% 50%);
 
       border: 3px solid #241a14;
       border-radius: 14px;
+
       background: #f7efd9;
       box-shadow: 3px 3px 0 #241a14;
     }
@@ -534,7 +625,6 @@
 
   <img id="loop-gif" src="" alt="" />
 
-  <!-- New transparent venue label -->
   <div id="venue-label">
     90's Cafe, Khammam
   </div>
@@ -546,6 +636,7 @@
       uiLoading: no;
       uiScanning: no;
       uiError: no;
+      maxTrack: 1;
       filterMinCF: 0.0001;
       filterBeta: 0.001;
     "
@@ -561,18 +652,137 @@
     embedded
   >
     <a-assets timeout="20000">
-      <video id="video-0" src="./video/Brahmanandam.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-1" src="./video/ali.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-2" src="./video/venumadhav.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-3" src="./video/jayaprakesh.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-4" src="./video/babumohan.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-5" src="./video/msnarayana.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-6" src="./video/krishnabagavan.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-7" src="./video/sunil.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-8" src="./video/venalakishor.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-9" src="./video/sathya.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-10" src="./video/Sapthagiri.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="video-11" src="./video/priyadarshi.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video
+        id="video-0"
+        src="./video/Brahmanandam.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-1"
+        src="./video/ali.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-2"
+        src="./video/venumadhav.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-3"
+        src="./video/jayaprakesh.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-4"
+        src="./video/babumohan.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-5"
+        src="./video/msnarayana.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-6"
+        src="./video/krishnabagavan.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-7"
+        src="./video/sunil.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-8"
+        src="./video/venalakishor.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-9"
+        src="./video/sathya.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-10"
+        src="./video/Sapthagiri.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
+
+      <video
+        id="video-11"
+        src="./video/priyadarshi.mp4"
+        preload="metadata"
+        loop
+        crossorigin="anonymous"
+        playsinline
+        webkit-playsinline
+        muted
+      ></video>
     </a-assets>
 
     <a-camera
@@ -828,6 +1038,11 @@
     let activeIndex = null;
 
     let audioCtx = null;
+    let gifTimer = null;
+    let gifIndex = 0;
+    let ambientTimer = null;
+
+    const irisProxy = { r: 0 };
 
     function getAudioCtx() {
       if (!audioCtx) {
@@ -908,6 +1123,11 @@
       });
     }
 
+    function showError(message) {
+      errorToast.textContent = message;
+      errorToast.classList.add("visible");
+    }
+
     gsap.set(
       "#entry-title, #entry-subtitle, #entry-hint, #entry-btn",
       { opacity: 0 }
@@ -966,16 +1186,30 @@
     });
 
     sceneEl.addEventListener("arError", (event) => {
-      console.error("MEMEVERSE: MindAR camera error:", event.detail);
+      console.error(
+        "MEMEVERSE: MindAR camera error:",
+        event.detail
+      );
 
-      errorToast.textContent =
-        "Camera could not start. Allow camera permission and open this site using HTTPS or localhost.";
+      showError(
+        "Camera could not start. Allow camera permission and open this site using HTTPS or localhost."
+      );
 
-      errorToast.classList.add("visible");
+      entryBtn.disabled = false;
+      entryBtn.textContent = "Tap to Begin";
+      hasStartedAR = false;
     });
 
+    /*
+      Important:
+      This starts only MindAR/camera.
+      It does NOT try to play all 12 videos first.
+    */
     entryBtn.addEventListener("click", async () => {
       try {
+        entryBtn.disabled = true;
+        entryBtn.textContent = "Starting Camera...";
+
         const ctx = getAudioCtx();
 
         if (ctx.state === "suspended") {
@@ -984,38 +1218,17 @@
 
         playTapSound();
 
-        for (const t of targets) {
-          if (!t.video) {
-            continue;
-          }
-
-          t.video.muted = false;
-
-          try {
-            await t.video.play();
-            t.video.pause();
-            t.video.currentTime = 0;
-          } catch (videoError) {
-            console.warn(
-              `MEMEVERSE: Audio unlock blocked for "${t.name}".`,
-              videoError
-            );
-          }
-        }
-
         const mindarSystem = sceneEl.systems["mindar-image-system"];
 
-        if (mindarSystem && !hasStartedAR) {
-          hasStartedAR = true;
+        if (!mindarSystem) {
+          throw new Error(
+            "MindAR is not initialized yet. Wait a moment and try again."
+          );
+        }
 
-          try {
-            await mindarSystem.start();
-          } catch (startError) {
-            console.warn(
-              "MEMEVERSE: MindAR may already be running.",
-              startError
-            );
-          }
+        if (!hasStartedAR) {
+          hasStartedAR = true;
+          await mindarSystem.start();
         }
 
         gsap.to("#entry-screen", {
@@ -1034,12 +1247,16 @@
           }
         });
       } catch (error) {
-        console.error("MEMEVERSE: Start error:", error);
+        console.error("MEMEVERSE: Camera start failed:", error);
 
-        errorToast.textContent =
-          "Could not open the camera. Please allow camera permission, then reload.";
+        hasStartedAR = false;
 
-        errorToast.classList.add("visible");
+        entryBtn.disabled = false;
+        entryBtn.textContent = "Tap to Begin";
+
+        showError(
+          "Camera could not start. Allow camera permission, use HTTPS or localhost, then reload."
+        );
       }
     });
 
@@ -1120,6 +1337,17 @@
       stopGifLoop();
     }
 
+    function stopOtherVideos(activeVideo) {
+      targets.forEach((target) => {
+        if (!target.video || target.video === activeVideo) {
+          return;
+        }
+
+        target.video.pause();
+        target.video.currentTime = 0;
+      });
+    }
+
     targets.forEach((t) => {
       if (!t.targetEntity) {
         console.warn(
@@ -1133,25 +1361,47 @@
           return;
         }
 
+        activeIndex = t.index;
+
         console.log(
           `MEMEVERSE: Target found - ${t.name} (index ${t.index}).`
         );
-
-        activeIndex = t.index;
 
         scanHud.classList.remove("visible");
         stopAmbientParticles();
 
         if (t.video) {
+          stopOtherVideos(t.video);
+
           t.video.currentTime = 0;
+          t.video.muted = false;
 
           try {
             await t.video.play();
           } catch (error) {
             console.warn(
-              `MEMEVERSE: Playback blocked for "${t.name}":`,
+              `MEMEVERSE: Playback blocked for "${t.name}". Retrying muted:`,
               error
             );
+
+            /*
+              Fallback:
+              If browser blocks auto sound, video still plays muted.
+            */
+            t.video.muted = true;
+
+            try {
+              await t.video.play();
+            } catch (mutedError) {
+              console.error(
+                `MEMEVERSE: Video failed for "${t.name}". Check file path/codec.`,
+                mutedError
+              );
+
+              showError(
+                `${t.name}'s video could not play. Check the video filename, folder path, and MP4 codec.`
+              );
+            }
           }
         }
 
@@ -1172,6 +1422,8 @@
 
         if (t.video) {
           t.video.pause();
+          t.video.currentTime = 0;
+          t.video.muted = true;
         }
 
         hideSequence(t);
@@ -1181,6 +1433,27 @@
           startAmbientParticles();
         }
       });
+
+      if (t.video) {
+        t.video.addEventListener("error", () => {
+          console.error(
+            `MEMEVERSE: Video file error for ${t.name}:`,
+            {
+              src: t.video.currentSrc,
+              code: t.video.error ? t.video.error.code : "unknown",
+              message: t.video.error
+                ? t.video.error.message
+                : "unknown"
+            }
+          );
+
+          if (activeIndex === t.index) {
+            showError(
+              `${t.name}'s video file could not load. Verify the exact filename and use an H.264/AAC MP4 file.`
+            );
+          }
+        });
+      }
     });
 
     const DEFAULT_GIFS = [
@@ -1199,14 +1472,7 @@
       GIF_SETS[t.index] = DEFAULT_GIFS;
     });
 
-    const GIF_FRAME_MS = 500;
-
-    let gifTimer = null;
-    let gifIndex = 0;
-
-    const irisProxy = {
-      r: 0
-    };
+    const GIF_FRAME_MS = 900;
 
     function setGifClip(percent) {
       const clipValue = `circle(${percent}% at 50% 50%)`;
@@ -1297,8 +1563,6 @@
         }
       });
     }
-
-    let ambientTimer = null;
 
     function spawnAmbientDot() {
       const dot = document.createElement("div");
