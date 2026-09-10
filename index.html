@@ -1,24 +1,1983 @@
-#loop-gif {
-  position: fixed !important;
-  top: 18px;
-  left: 18px;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
 
-  width: 18vw !important;
-  max-width: 115px;
-  min-width: 62px;
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
 
-  height: auto !important;
+  <meta name="theme-color" content="#241a14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
 
-  transform: none;
+  <title>MEMEVERSE — 90's Cafe, Khammam</title>
 
-  z-index: 40;
-  pointer-events: none;
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  opacity: 0;
-  clip-path: circle(0% at 50% 50%);
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
 
-  border: 3px solid #241a14;
-  border-radius: 14px;
-  background: #f7efd9;
-  box-shadow: 3px 3px 0 #241a14;
-}
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+  <script>
+    AFRAME.registerComponent("comic-frame", {
+      schema: {
+        innerWidth: { type: "number", default: 1 },
+        innerHeight: { type: "number", default: 0.55 },
+        borderScale: { type: "number", default: 1.14 }
+      },
+
+      init: function () {
+        const THREE = AFRAME.THREE;
+        const { innerWidth, innerHeight, borderScale } = this.data;
+
+        const outerW = innerWidth * borderScale;
+        const outerH = innerHeight * borderScale;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 1024;
+        canvas.height = Math.round(1024 * (outerH / outerW));
+
+        const ctx = canvas.getContext("2d");
+
+        const marginFrac = (borderScale - 1) / (2 * borderScale);
+        const mx = canvas.width * marginFrac;
+        const my = canvas.height * marginFrac;
+
+        const outerRadius = canvas.width * 0.035;
+        const innerRadius = canvas.width * 0.018;
+
+        function roundedRectPath(x, y, width, height, radius) {
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.arcTo(x + width, y, x + width, y + height, radius);
+          ctx.arcTo(x + width, y + height, x, y + height, radius);
+          ctx.arcTo(x, y + height, x, y, radius);
+          ctx.arcTo(x, y, x + width, y, radius);
+          ctx.closePath();
+        }
+
+        /* Outer cream comic card */
+        ctx.save();
+        ctx.shadowColor = "rgba(36, 26, 20, 0.42)";
+        ctx.shadowBlur = canvas.width * 0.028;
+        ctx.shadowOffsetY = canvas.width * 0.014;
+
+        roundedRectPath(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          outerRadius
+        );
+
+        ctx.fillStyle = "#F7EFD9";
+        ctx.fill();
+        ctx.restore();
+
+        /* Outer black outline */
+        roundedRectPath(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          outerRadius
+        );
+
+        ctx.lineWidth = canvas.width * 0.014;
+        ctx.strokeStyle = "#241A14";
+        ctx.stroke();
+
+        /* Transparent hole where video appears */
+        ctx.save();
+        ctx.globalCompositeOperation = "destination-out";
+
+        roundedRectPath(
+          mx,
+          my,
+          canvas.width - mx * 2,
+          canvas.height - my * 2,
+          innerRadius
+        );
+
+        ctx.fill();
+        ctx.restore();
+
+        /* Inner black outline */
+        roundedRectPath(
+          mx,
+          my,
+          canvas.width - mx * 2,
+          canvas.height - my * 2,
+          innerRadius
+        );
+
+        ctx.lineWidth = canvas.width * 0.009;
+        ctx.strokeStyle = "#241A14";
+        ctx.stroke();
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+
+        if (THREE.SRGBColorSpace) {
+          texture.colorSpace = THREE.SRGBColorSpace;
+        }
+
+        const geometry = new THREE.PlaneGeometry(outerW, outerH);
+
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.renderOrder = 0;
+
+        this.el.setObject3D("mesh", mesh);
+      }
+    });
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      touch-action: manipulation;
+    }
+
+    /* MindAR-generated camera layer */
+    video.mindar-video {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 0 !important;
+      display: block !important;
+
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+
+      object-fit: cover !important;
+      background: #000 !important;
+    }
+
+    canvas.mindar-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 1 !important;
+      display: block !important;
+
+      width: 100vw !important;
+      height: 100vh !important;
+
+      pointer-events: none !important;
+    }
+
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 2 !important;
+      display: block !important;
+
+      width: 100vw !important;
+      height: 100vh !important;
+
+      background: transparent !important;
+    }
+
+    .a-canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 2 !important;
+      display: block !important;
+
+      width: 100vw !important;
+      height: 100vh !important;
+
+      background: transparent !important;
+    }
+
+    .a-enter-vr,
+    .a-enter-ar,
+    .a-orientation-modal,
+    .a-loader-title {
+      display: none !important;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Entry screen                                                  */
+    /* ------------------------------------------------------------- */
+
+    #entry-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+      padding: 24px;
+
+      background: #f2e6c9;
+      text-align: center;
+    }
+
+    #entry-screen.hidden {
+      display: none;
+    }
+
+    #entry-sunburst {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      width: 220vw;
+      height: 220vw;
+
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+
+      background: repeating-conic-gradient(
+        #e8a62e 0deg 9deg,
+        #c1432e 9deg 18deg
+      );
+
+      opacity: 0.22;
+    }
+
+    #entry-title {
+      position: relative;
+      margin: 0;
+
+      color: #7a2426;
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(48px, 15vw, 74px);
+      font-weight: 800;
+      letter-spacing: 1px;
+      line-height: 0.95;
+
+      text-shadow:
+        4px 4px 0 #e8a62e,
+        7px 7px 0 #241a14;
+    }
+
+    #entry-subtitle {
+      position: relative;
+      margin-top: 14px;
+      padding: 7px 22px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      background: #1b6b67;
+      color: #f7efd9;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    #entry-hint {
+      position: relative;
+      max-width: 310px;
+      margin: 26px 0 0;
+
+      color: #241a14;
+      font-family: "Fredoka", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+
+      opacity: 0.82;
+    }
+
+    #entry-btn {
+      position: relative;
+      margin-top: 22px;
+      padding: 14px 38px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      background: #e8a62e;
+      color: #241a14;
+
+      box-shadow: 4px 4px 0 #241a14;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    #entry-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 #241a14;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Scan HUD                                                      */
+    /* ------------------------------------------------------------- */
+
+    #scan-hud {
+      position: fixed;
+      inset: 0;
+      z-index: 45;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      pointer-events: none;
+      opacity: 0;
+
+      transition: opacity 0.35s ease;
+    }
+
+    #scan-hud.visible {
+      opacity: 1;
+    }
+
+    #scan-frame {
+      position: relative;
+      width: 58vw;
+      max-width: 320px;
+      aspect-ratio: 1 / 1.15;
+    }
+
+    #scan-frame .corner {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+
+      border: 4px solid #e8a62e;
+
+      animation: scan-pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes scan-pulse {
+      0%,
+      100% {
+        opacity: 0.55;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    #scan-frame .tl {
+      top: 0;
+      left: 0;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 10px 0 0 0;
+    }
+
+    #scan-frame .tr {
+      top: 0;
+      right: 0;
+      border-bottom: none;
+      border-left: none;
+      border-radius: 0 10px 0 0;
+    }
+
+    #scan-frame .bl {
+      bottom: 0;
+      left: 0;
+      border-top: none;
+      border-right: none;
+      border-radius: 0 0 0 10px;
+    }
+
+    #scan-frame .br {
+      right: 0;
+      bottom: 0;
+      border-top: none;
+      border-left: none;
+      border-radius: 0 0 10px 0;
+    }
+
+    #scan-hint {
+      position: absolute;
+      bottom: -44px;
+      left: 50%;
+
+      padding: 6px 16px;
+      border-radius: 999px;
+
+      transform: translateX(-50%);
+
+      background: rgba(0, 0, 0, 0.58);
+      color: #fff;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Ambient particles                                             */
+    /* ------------------------------------------------------------- */
+
+    #ambient-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 44;
+
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .ambient-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+      background: #e8a62e;
+
+      opacity: 0;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* GIF sticker                                                   */
+    /* ------------------------------------------------------------- */
+
+    #loop-gif {
+      position: fixed !important;
+      top: 18px;
+      left: 18px;
+      z-index: 52;
+
+      width: 18vw !important;
+      max-width: 115px;
+      min-width: 62px;
+      height: auto !important;
+
+      transform: none;
+
+      pointer-events: none;
+      opacity: 0;
+
+      -webkit-clip-path: circle(0% at 50% 50%);
+      clip-path: circle(0% at 50% 50%);
+
+      border: 3px solid #241a14;
+      border-radius: 14px;
+
+      background: #f7efd9;
+      box-shadow: 3px 3px 0 #241a14;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Comedian name card                                            */
+    /* ------------------------------------------------------------- */
+
+    #comedian-badge {
+      position: fixed;
+      bottom: 68px;
+      left: 16px;
+      z-index: 55;
+
+      max-width: calc(100vw - 32px);
+      padding: 7px 15px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      transform: translateY(18px) rotate(-2deg);
+
+      background: #e8a62e;
+      color: #241a14;
+
+      box-shadow: 4px 4px 0 #241a14;
+
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(15px, 4vw, 19px);
+      font-weight: 800;
+      letter-spacing: 0.6px;
+
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #video-status {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 55;
+
+      max-width: 210px;
+      padding: 8px 13px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      transform: translateY(-14px);
+
+      background: #f7efd9;
+      color: #241a14;
+
+      box-shadow: 3px 3px 0 #241a14;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+
+      opacity: 0;
+      pointer-events: none;
+
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    #video-status.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Action buttons                                                */
+    /* ------------------------------------------------------------- */
+
+    #sound-btn,
+    #capture-btn,
+    #share-btn {
+      position: fixed;
+      right: 16px;
+      z-index: 60;
+
+      display: none;
+      min-height: 42px;
+      padding: 9px 13px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      box-shadow: 3px 3px 0 #241a14;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    #sound-btn.visible,
+    #capture-btn.visible,
+    #share-btn.visible {
+      display: block;
+    }
+
+    #sound-btn {
+      bottom: 18px;
+      background: #1b6b67;
+      color: #f7efd9;
+    }
+
+    #capture-btn {
+      bottom: 70px;
+      background: #e8a62e;
+      color: #241a14;
+    }
+
+    #share-btn {
+      bottom: 122px;
+      background: #c1432e;
+      color: #fff;
+    }
+
+    #sound-btn:active,
+    #capture-btn:active,
+    #share-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #241a14;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Venue text                                                    */
+    /* ------------------------------------------------------------- */
+
+    #venue-label {
+      position: fixed;
+      right: 14px;
+      bottom: 12px;
+      z-index: 48;
+
+      padding: 5px 10px;
+
+      border: 2px solid rgba(247, 239, 217, 0.8);
+      border-radius: 999px;
+
+      background: rgba(36, 26, 20, 0.72);
+      color: #f7efd9;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+
+      pointer-events: none;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Error toast                                                   */
+    /* ------------------------------------------------------------- */
+
+    #ar-error-toast {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      z-index: 110;
+
+      display: none;
+      max-width: 86vw;
+      padding: 12px 18px;
+
+      border-radius: 14px;
+      transform: translateX(-50%);
+
+      background: rgba(20, 10, 8, 0.94);
+      color: #f7efd9;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    #ar-error-toast.visible {
+      display: block;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Capture preview                                               */
+    /* ------------------------------------------------------------- */
+
+    #capture-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+
+      background: rgba(0, 0, 0, 0.88);
+    }
+
+    #capture-preview.visible {
+      display: flex;
+    }
+
+    #capture-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      width: min(92vw, 430px);
+      max-height: 92vh;
+      padding: 14px;
+
+      border: 4px solid #241a14;
+      border-radius: 18px;
+
+      background: #f7efd9;
+      box-shadow: 7px 7px 0 #e8a62e;
+    }
+
+    #capture-image {
+      display: block;
+
+      width: 100%;
+      max-height: 67vh;
+
+      border: 3px solid #241a14;
+      border-radius: 10px;
+
+      object-fit: contain;
+      background: #000;
+    }
+
+    #capture-actions {
+      display: flex;
+      gap: 10px;
+
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    #download-capture-btn,
+    #share-capture-btn,
+    #close-capture-btn {
+      flex: 1;
+      padding: 10px 8px;
+
+      border: 3px solid #241a14;
+      border-radius: 999px;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    #download-capture-btn {
+      background: #e8a62e;
+      color: #241a14;
+    }
+
+    #share-capture-btn {
+      background: #1b6b67;
+      color: #f7efd9;
+    }
+
+    #close-capture-btn {
+      background: #c1432e;
+      color: #fff;
+    }
+
+    @media (max-width: 380px) {
+      #share-btn {
+        display: none !important;
+      }
+
+      #comedian-badge {
+        bottom: 62px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="entry-screen">
+    <div id="entry-sunburst"></div>
+
+    <h1 id="entry-title">MEMEVERSE</h1>
+
+    <div id="entry-subtitle">
+      The Comedy Wall That Talks Back
+    </div>
+
+    <p id="entry-hint">
+      Point your camera at a comedian on the wall, then tap below to begin.
+    </p>
+
+    <button id="entry-btn" type="button">
+      Tap to Begin
+    </button>
+  </div>
+
+  <div id="scan-hud">
+    <div id="scan-frame">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+
+      <div id="scan-hint">
+        Point at a face on the wall
+      </div>
+    </div>
+  </div>
+
+  <div id="ambient-layer"></div>
+
+  <img id="loop-gif" src="" alt="" />
+
+  <div id="comedian-badge">
+    <span id="comedian-badge-label"></span>
+  </div>
+
+  <div id="video-status"></div>
+
+  <button id="sound-btn" type="button">
+    🔊 Sound
+  </button>
+
+  <button id="capture-btn" type="button">
+    📸 Capture
+  </button>
+
+  <button id="share-btn" type="button">
+    ↗ Share
+  </button>
+
+  <div id="venue-label">
+    90's Cafe, Khammam
+  </div>
+
+  <div id="ar-error-toast"></div>
+
+  <div id="capture-preview">
+    <div id="capture-card">
+      <img id="capture-image" alt="Your MEMEVERSE capture" />
+
+      <div id="capture-actions">
+        <button id="download-capture-btn" type="button">
+          Download
+        </button>
+
+        <button id="share-capture-btn" type="button">
+          Share
+        </button>
+
+        <button id="close-capture-btn" type="button">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <a-scene
+    id="ar-scene"
+    mindar-image="
+      imageTargetSrc: ./targets.mind;
+      uiLoading: no;
+      uiScanning: no;
+      uiError: no;
+      maxTrack: 1;
+      filterMinCF: 0.0001;
+      filterBeta: 0.001;
+      warmupTolerance: 8;
+      missTolerance: 12;
+    "
+    color-space="sRGB"
+    renderer="
+      alpha: true;
+      antialias: true;
+      colorManagement: true;
+      physicallyCorrectLights: true;
+    "
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+  >
+    <a-assets timeout="25000">
+      <video id="video-0" src="./video/brahmanandam.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-1" src="./video/ali.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-2" src="./video/venumadhav.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-3" src="./video/jayaprakashreddy.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-4" src="./video/babumohan.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-5" src="./video/msnarayana.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-6" src="./video/krishnabhagavan.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-7" src="./video/sunil.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-8" src="./video/vennelakishore.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-9" src="./video/sathya.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-10" src="./video/sapthagiri.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+      <video id="video-11" src="./video/priyadarshi.mp4" preload="metadata" loop playsinline webkit-playsinline muted></video>
+    </a-assets>
+
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false"
+      active="true"
+    ></a-camera>
+
+    <a-entity id="target-0" mindar-image-target="targetIndex: 0">
+      <a-entity id="comic-frame-0" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-0" src="#video-0" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-1" mindar-image-target="targetIndex: 1">
+      <a-entity id="comic-frame-1" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-1" src="#video-1" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-2" mindar-image-target="targetIndex: 2">
+      <a-entity id="comic-frame-2" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-2" src="#video-2" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-3" mindar-image-target="targetIndex: 3">
+      <a-entity id="comic-frame-3" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-3" src="#video-3" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-4" mindar-image-target="targetIndex: 4">
+      <a-entity id="comic-frame-4" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-4" src="#video-4" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-5" mindar-image-target="targetIndex: 5">
+      <a-entity id="comic-frame-5" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-5" src="#video-5" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-6" mindar-image-target="targetIndex: 6">
+      <a-entity id="comic-frame-6" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-6" src="#video-6" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-7" mindar-image-target="targetIndex: 7">
+      <a-entity id="comic-frame-7" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-7" src="#video-7" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-8" mindar-image-target="targetIndex: 8">
+      <a-entity id="comic-frame-8" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-8" src="#video-8" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-9" mindar-image-target="targetIndex: 9">
+      <a-entity id="comic-frame-9" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-9" src="#video-9" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-10" mindar-image-target="targetIndex: 10">
+      <a-entity id="comic-frame-10" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-10" src="#video-10" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target-11" mindar-image-target="targetIndex: 11">
+      <a-entity id="comic-frame-11" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
+      <a-video id="video-entity-11" src="#video-11" width="1" height="0.55" position="0 0 0"></a-video>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const sceneEl = document.querySelector("#ar-scene");
+
+    const entryScreen = document.querySelector("#entry-screen");
+    const entryBtn = document.querySelector("#entry-btn");
+
+    const scanHud = document.querySelector("#scan-hud");
+    const errorToast = document.querySelector("#ar-error-toast");
+    const ambientLayer = document.querySelector("#ambient-layer");
+
+    const loopGifEl = document.querySelector("#loop-gif");
+
+    const comedianBadge = document.querySelector("#comedian-badge");
+    const comedianBadgeLabel = document.querySelector("#comedian-badge-label");
+
+    const videoStatus = document.querySelector("#video-status");
+
+    const soundBtn = document.querySelector("#sound-btn");
+    const captureBtn = document.querySelector("#capture-btn");
+    const shareBtn = document.querySelector("#share-btn");
+
+    const capturePreview = document.querySelector("#capture-preview");
+    const captureImage = document.querySelector("#capture-image");
+
+    const downloadCaptureBtn = document.querySelector("#download-capture-btn");
+    const shareCaptureBtn = document.querySelector("#share-capture-btn");
+    const closeCaptureBtn = document.querySelector("#close-capture-btn");
+
+    const ROSTER = [
+      { index: 0, name: "Brahmanandam" },
+      { index: 1, name: "Ali" },
+      { index: 2, name: "Venu Madhav" },
+      { index: 3, name: "Jaya Prakash Reddy" },
+      { index: 4, name: "Babu Mohan" },
+      { index: 5, name: "MS Narayana" },
+      { index: 6, name: "Krishna Bhagavan" },
+      { index: 7, name: "Sunil" },
+      { index: 8, name: "Vennela Kishore" },
+      { index: 9, name: "Sathya" },
+      { index: 10, name: "Sapthagiri" },
+      { index: 11, name: "Priyadarshi" }
+    ];
+
+    const targets = ROSTER.map(({ index, name }) => ({
+      index,
+      name,
+
+      targetEntity: document.querySelector(`#target-${index}`),
+      video: document.querySelector(`#video-${index}`),
+
+      frameEntity: document.querySelector(`#comic-frame-${index}`),
+      videoEntity: document.querySelector(`#video-entity-${index}`),
+
+      lossTimer: null
+    }));
+
+    const GIF_SETS = {
+      0: ["./gifs/1.gif", "./gifs/2.gif", "./gifs/3.gif"],
+      1: ["./gifs/4.gif", "./gifs/5.gif"],
+      2: ["./gifs/6.gif", "./gifs/7.gif"],
+      3: ["./gifs/1.gif", "./gifs/3.gif"],
+      4: ["./gifs/2.gif", "./gifs/4.gif"],
+      5: ["./gifs/5.gif", "./gifs/7.gif"],
+      6: ["./gifs/1.gif", "./gifs/6.gif"],
+      7: ["./gifs/2.gif", "./gifs/5.gif"],
+      8: ["./gifs/3.gif", "./gifs/6.gif"],
+      9: ["./gifs/4.gif", "./gifs/7.gif"],
+      10: ["./gifs/1.gif", "./gifs/5.gif"],
+      11: ["./gifs/2.gif", "./gifs/6.gif"]
+    };
+
+    const GIF_FRAME_MS = 1500;
+    const TARGET_LOSS_DELAY_MS = 900;
+
+    let activeIndex = null;
+    let arStarted = false;
+
+    let audioCtx = null;
+
+    let gifTimer = null;
+    let gifIndex = 0;
+
+    let ambientTimer = null;
+
+    let latestCaptureBlob = null;
+    let latestCaptureUrl = null;
+
+    const irisProxy = { r: 0 };
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+      }
+
+      return audioCtx;
+    }
+
+    function playTone({
+      freq = 880,
+      endFreq = null,
+      duration = 0.2,
+      type = "triangle",
+      volume = 0.2
+    }) {
+      const ctx = getAudioCtx();
+
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+
+      if (endFreq) {
+        oscillator.frequency.exponentialRampToValueAtTime(
+          endFreq,
+          ctx.currentTime + duration * 0.65
+        );
+      }
+
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+
+      gain.gain.exponentialRampToValueAtTime(
+        volume,
+        ctx.currentTime + 0.02
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + duration
+      );
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + duration + 0.05);
+    }
+
+    function playTapSound() {
+      playTone({
+        freq: 420,
+        endFreq: 620,
+        duration: 0.15,
+        type: "sine",
+        volume: 0.2
+      });
+    }
+
+    function playLockOnChime() {
+      playTone({
+        freq: 700,
+        endFreq: 1100,
+        duration: 0.28,
+        type: "triangle",
+        volume: 0.25
+      });
+    }
+
+    function showToast(message, duration = 4000) {
+      errorToast.textContent = message;
+      errorToast.classList.add("visible");
+
+      window.clearTimeout(showToast.timeoutId);
+
+      showToast.timeoutId = window.setTimeout(() => {
+        errorToast.classList.remove("visible");
+      }, duration);
+    }
+
+    function showVideoStatus(message) {
+      videoStatus.textContent = message;
+      videoStatus.classList.add("visible");
+    }
+
+    function hideVideoStatus() {
+      videoStatus.classList.remove("visible");
+    }
+
+    function showComedianBadge(name) {
+      comedianBadgeLabel.textContent = name.toUpperCase();
+
+      gsap.killTweensOf(comedianBadge);
+
+      gsap.to(comedianBadge, {
+        opacity: 1,
+        y: 0,
+        duration: 0.35,
+        ease: "back.out(1.5)"
+      });
+    }
+
+    function hideComedianBadge() {
+      gsap.killTweensOf(comedianBadge);
+
+      gsap.to(comedianBadge, {
+        opacity: 0,
+        y: 18,
+        duration: 0.2,
+        ease: "power1.in"
+      });
+    }
+
+    function showActionButtons() {
+      soundBtn.classList.add("visible");
+      captureBtn.classList.add("visible");
+      shareBtn.classList.add("visible");
+    }
+
+    function hideActionButtons() {
+      soundBtn.classList.remove("visible");
+      captureBtn.classList.remove("visible");
+      shareBtn.classList.remove("visible");
+    }
+
+    function stopAllVideos(exceptIndex = null) {
+      targets.forEach((t) => {
+        if (!t.video || t.index === exceptIndex) {
+          return;
+        }
+
+        t.video.pause();
+        t.video.currentTime = 0;
+        t.video.muted = true;
+      });
+    }
+
+    function revealSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
+
+        gsap.fromTo(
+          t.frameEntity.object3D.scale,
+          {
+            x: 0.001,
+            y: 0.001,
+            z: 0.001
+          },
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+            duration: 0.45,
+            ease: "elastic.out(1, 0.6)"
+          }
+        );
+      }
+
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
+
+        gsap.fromTo(
+          t.videoEntity.object3D.scale,
+          {
+            x: 0.001,
+            y: 0.001,
+            z: 0.001
+          },
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+            duration: 0.42,
+            delay: 0.08,
+            ease: "elastic.out(1, 0.65)"
+          }
+        );
+      }
+
+      window.setTimeout(() => {
+        if (activeIndex === t.index) {
+          startGifLoop(t.index);
+        }
+      }, 250);
+    }
+
+    function hideSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
+
+        gsap.to(t.frameEntity.object3D.scale, {
+          x: 0.001,
+          y: 0.001,
+          z: 0.001,
+          duration: 0.2,
+          ease: "power1.in"
+        });
+      }
+
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
+
+        gsap.to(t.videoEntity.object3D.scale, {
+          x: 0.001,
+          y: 0.001,
+          z: 0.001,
+          duration: 0.2,
+          ease: "power1.in"
+        });
+      }
+    }
+
+    async function playTargetVideo(t) {
+      if (!t.video) {
+        showToast(`Missing video element for ${t.name}.`);
+        return;
+      }
+
+      stopAllVideos(t.index);
+
+      t.video.pause();
+      t.video.currentTime = 0;
+
+      /*
+        Muted video can start automatically much more reliably on mobile.
+        User can press the Sound button later.
+      */
+      t.video.muted = true;
+
+      showVideoStatus("Loading dialogue...");
+
+      try {
+        if (t.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+          t.video.load();
+        }
+
+        await t.video.play();
+
+        hideVideoStatus();
+
+        console.log(
+          `MEMEVERSE: Playing ${t.name}.`,
+          `readyState: ${t.video.readyState}`
+        );
+      } catch (error) {
+        console.error(
+          `MEMEVERSE: Video failed for ${t.name}:`,
+          error
+        );
+
+        hideVideoStatus();
+
+        showToast(
+          `${t.name}'s video could not play. Check the file path and use H.264 MP4.`
+        );
+      }
+    }
+
+    targets.forEach((t) => {
+      if (!t.video) {
+        console.error(`MEMEVERSE: Missing #video-${t.index}.`);
+        return;
+      }
+
+      t.video.addEventListener("loadedmetadata", () => {
+        console.log(
+          `MEMEVERSE: Metadata loaded for ${t.name}:`,
+          `${t.video.videoWidth}x${t.video.videoHeight}`
+        );
+      });
+
+      t.video.addEventListener("canplay", () => {
+        console.log(`MEMEVERSE: Can play ${t.name}.`);
+      });
+
+      t.video.addEventListener("error", () => {
+        const mediaError = t.video.error;
+
+        console.error(`MEMEVERSE: Video error for ${t.name}:`, {
+          source: t.video.currentSrc,
+          code: mediaError ? mediaError.code : "unknown",
+          message: mediaError ? mediaError.message : "unknown"
+        });
+
+        if (activeIndex === t.index) {
+          hideVideoStatus();
+
+          showToast(
+            `${t.name}'s clip could not load. Verify the filename and encode it as H.264/AAC MP4.`
+          );
+        }
+      });
+    });
+
+    gsap.set(
+      "#entry-title, #entry-subtitle, #entry-hint, #entry-btn",
+      { opacity: 0 }
+    );
+
+    gsap.set("#entry-title", { scale: 0.7 });
+
+    gsap.to("#entry-sunburst", {
+      rotate: 360,
+      duration: 50,
+      repeat: -1,
+      ease: "none"
+    });
+
+    gsap.timeline()
+      .to(
+        "#entry-title",
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          ease: "back.out(1.6)"
+        },
+        0.1
+      )
+      .to("#entry-subtitle", { opacity: 1, duration: 0.4 }, 0.4)
+      .to("#entry-hint", { opacity: 1, duration: 0.4 }, 0.6)
+      .to("#entry-btn", { opacity: 1, duration: 0.4 }, 0.75);
+
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MEMEVERSE: MindAR ready.");
+    });
+
+    sceneEl.addEventListener("arError", (event) => {
+      console.error("MEMEVERSE: MindAR error:", event.detail);
+
+      showToast(
+        "Camera could not start. Allow camera permission and use HTTPS or localhost."
+      );
+    });
+
+    entryBtn.addEventListener("click", async () => {
+      try {
+        const ctx = getAudioCtx();
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        playTapSound();
+
+        const mindarSystem = sceneEl.systems["mindar-image-system"];
+
+        if (mindarSystem && !arStarted) {
+          arStarted = true;
+
+          try {
+            await mindarSystem.start();
+          } catch (error) {
+            console.warn("MindAR start response:", error);
+          }
+        }
+
+        gsap.to("#entry-screen", {
+          opacity: 0,
+          scale: 1.05,
+          duration: 0.4,
+          ease: "power1.in",
+
+          onComplete: () => {
+            entryScreen.classList.add("hidden");
+
+            if (activeIndex === null) {
+              scanHud.classList.add("visible");
+              startAmbientParticles();
+            }
+          }
+        });
+      } catch (error) {
+        console.error("MEMEVERSE: Start error:", error);
+
+        showToast(
+          "Could not start AR. Allow camera permission, then reload the page."
+        );
+      }
+    });
+
+    targets.forEach((t) => {
+      if (!t.targetEntity) {
+        console.warn(`MEMEVERSE: Missing target-${t.index}.`);
+        return;
+      }
+
+      t.targetEntity.addEventListener("targetFound", async () => {
+        window.clearTimeout(t.lossTimer);
+
+        if (activeIndex !== null && activeIndex !== t.index) {
+          return;
+        }
+
+        const alreadyActive = activeIndex === t.index;
+
+        activeIndex = t.index;
+
+        scanHud.classList.remove("visible");
+        stopAmbientParticles();
+
+        if (alreadyActive) {
+          return;
+        }
+
+        console.log(`MEMEVERSE: Target found: ${t.name}.`);
+
+        showComedianBadge(t.name);
+        showActionButtons();
+
+        soundBtn.textContent = "🔊 Sound";
+
+        playLockOnChime();
+        revealSequence(t);
+
+        await playTargetVideo(t);
+      });
+
+      t.targetEntity.addEventListener("targetLost", () => {
+        if (activeIndex !== t.index) {
+          return;
+        }
+
+        window.clearTimeout(t.lossTimer);
+
+        t.lossTimer = window.setTimeout(() => {
+          if (activeIndex !== t.index) {
+            return;
+          }
+
+          console.log(`MEMEVERSE: Target lost: ${t.name}.`);
+
+          activeIndex = null;
+
+          if (t.video) {
+            t.video.pause();
+            t.video.currentTime = 0;
+            t.video.muted = true;
+          }
+
+          stopGifLoop();
+          hideSequence(t);
+          hideComedianBadge();
+          hideVideoStatus();
+          hideActionButtons();
+
+          if (entryScreen.classList.contains("hidden")) {
+            scanHud.classList.add("visible");
+            startAmbientParticles();
+          }
+        }, TARGET_LOSS_DELAY_MS);
+      });
+    });
+
+    soundBtn.addEventListener("click", async () => {
+      if (activeIndex === null) {
+        return;
+      }
+
+      const activeTarget = targets.find(
+        (target) => target.index === activeIndex
+      );
+
+      if (!activeTarget || !activeTarget.video) {
+        return;
+      }
+
+      try {
+        const ctx = getAudioCtx();
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        activeTarget.video.muted = !activeTarget.video.muted;
+
+        if (activeTarget.video.paused) {
+          await activeTarget.video.play();
+        }
+
+        soundBtn.textContent = activeTarget.video.muted
+          ? "🔊 Sound"
+          : "🔇 Mute";
+      } catch (error) {
+        console.error("MEMEVERSE: Could not toggle sound:", error);
+
+        showToast(
+          "Sound could not start. Tap the Sound button once more."
+        );
+      }
+    });
+
+    function setGifClip(percent) {
+      const clipValue = `circle(${percent}% at 50% 50%)`;
+
+      loopGifEl.style.clipPath = clipValue;
+      loopGifEl.style.webkitClipPath = clipValue;
+    }
+
+    loopGifEl.addEventListener("load", () => {
+      loopGifEl.style.opacity = "1";
+
+      gsap.killTweensOf(irisProxy);
+
+      irisProxy.r = 0;
+
+      gsap.to(irisProxy, {
+        r: 75,
+        duration: 0.28,
+        ease: "power2.out",
+
+        onUpdate: () => {
+          setGifClip(irisProxy.r);
+        }
+      });
+    });
+
+    loopGifEl.addEventListener("error", () => {
+      console.warn(`MEMEVERSE: GIF failed: ${loopGifEl.src}`);
+
+      loopGifEl.style.opacity = "0";
+      setGifClip(0);
+    });
+
+    function showNextGif(index) {
+      const gifList = GIF_SETS[index];
+
+      if (
+        !gifList ||
+        gifList.length === 0 ||
+        activeIndex !== index
+      ) {
+        return;
+      }
+
+      const source = gifList[gifIndex % gifList.length];
+
+      gifIndex += 1;
+
+      loopGifEl.style.opacity = "0";
+      setGifClip(0);
+
+      /*
+        Cache-busting query makes it easier to see file changes while testing.
+      */
+      loopGifEl.src = `${source}?v=${Date.now()}`;
+    }
+
+    function startGifLoop(index) {
+      stopGifLoop();
+
+      gifIndex = 0;
+
+      showNextGif(index);
+
+      gifTimer = window.setInterval(() => {
+        showNextGif(index);
+      }, GIF_FRAME_MS);
+    }
+
+    function stopGifLoop() {
+      if (gifTimer) {
+        window.clearInterval(gifTimer);
+        gifTimer = null;
+      }
+
+      gsap.killTweensOf(irisProxy);
+
+      gsap.to(irisProxy, {
+        r: 0,
+        duration: 0.18,
+        ease: "power1.in",
+
+        onUpdate: () => {
+          setGifClip(irisProxy.r);
+        },
+
+        onComplete: () => {
+          loopGifEl.style.opacity = "0";
+        }
+      });
+    }
+
+    function spawnAmbientDot() {
+      const dot = document.createElement("div");
+
+      dot.className = "ambient-dot";
+
+      dot.style.left =
+        `${window.innerWidth * (0.3 + Math.random() * 0.4)}px`;
+
+      dot.style.top =
+        `${window.innerHeight * 0.75}px`;
+
+      ambientLayer.appendChild(dot);
+
+      gsap.timeline({
+        onComplete: () => {
+          dot.remove();
+        }
+      })
+        .to(dot, { opacity: 0.6, duration: 0.4 }, 0)
+        .to(
+          dot,
+          {
+            y: -180 - Math.random() * 100,
+            x: `+=${(Math.random() - 0.5) * 60}`,
+            duration: 2.4,
+            ease: "power1.out"
+          },
+          0
+        )
+        .to(dot, { opacity: 0, duration: 0.5 }, 1.9);
+    }
+
+    function startAmbientParticles() {
+      if (ambientTimer) {
+        return;
+      }
+
+      spawnAmbientDot();
+
+      ambientTimer = window.setInterval(() => {
+        spawnAmbientDot();
+      }, 700);
+    }
+
+    function stopAmbientParticles() {
+      if (!ambientTimer) {
+        return;
+      }
+
+      window.clearInterval(ambientTimer);
+      ambientTimer = null;
+    }
+
+    async function createCapture() {
+      const arCanvas = sceneEl.canvas;
+      const cameraVideo = document.querySelector("video.mindar-video");
+
+      if (!arCanvas) {
+        showToast("AR canvas is not ready yet.");
+        return null;
+      }
+
+      const outputCanvas = document.createElement("canvas");
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      outputCanvas.width = width;
+      outputCanvas.height = height;
+
+      const context = outputCanvas.getContext("2d");
+
+      context.fillStyle = "#000";
+      context.fillRect(0, 0, width, height);
+
+      /*
+        Some mobile browsers may block drawing live camera video onto
+        a canvas. In that case, the AR layer and branding can still appear.
+      */
+      if (
+        cameraVideo &&
+        cameraVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+      ) {
+        try {
+          drawCover(context, cameraVideo, width, height);
+        } catch (error) {
+          console.warn("MEMEVERSE: Camera capture unavailable:", error);
+        }
+      }
+
+      try {
+        context.drawImage(arCanvas, 0, 0, width, height);
+      } catch (error) {
+        console.warn("MEMEVERSE: AR canvas capture unavailable:", error);
+      }
+
+      drawCaptureBranding(context, width, height);
+
+      return new Promise((resolve) => {
+        outputCanvas.toBlob(
+          (blob) => resolve(blob),
+          "image/png",
+          0.95
+        );
+      });
+    }
+
+    function drawCover(context, media, targetWidth, targetHeight) {
+      const sourceWidth = media.videoWidth || targetWidth;
+      const sourceHeight = media.videoHeight || targetHeight;
+
+      const sourceRatio = sourceWidth / sourceHeight;
+      const targetRatio = targetWidth / targetHeight;
+
+      let drawWidth;
+      let drawHeight;
+      let offsetX;
+      let offsetY;
+
+      if (sourceRatio > targetRatio) {
+        drawHeight = targetHeight;
+        drawWidth = targetHeight * sourceRatio;
+        offsetX = (targetWidth - drawWidth) / 2;
+        offsetY = 0;
+      } else {
+        drawWidth = targetWidth;
+        drawHeight = targetWidth / sourceRatio;
+        offsetX = 0;
+        offsetY = (targetHeight - drawHeight) / 2;
+      }
+
+      context.drawImage(
+        media,
+        offsetX,
+        offsetY,
+        drawWidth,
+        drawHeight
+      );
+    }
+
+    function drawCaptureBranding(context, width, height) {
+      const activeTarget = targets.find(
+        (target) => target.index === activeIndex
+      );
+
+      const name = activeTarget
+        ? activeTarget.name.toUpperCase()
+        : "MEMEVERSE";
+
+      context.save();
+
+      context.font = "bold 22px sans-serif";
+      context.textBaseline = "middle";
+
+      const nameWidth = context.measureText(name).width;
+      const nameBadgeWidth = nameWidth + 36;
+
+      const nameX = 16;
+      const nameY = height - 68;
+
+      roundRect(
+        context,
+        nameX,
+        nameY,
+        nameBadgeWidth,
+        40,
+        20
+      );
+
+      context.fillStyle = "#E8A62E";
+      context.fill();
+
+      context.lineWidth = 3;
+      context.strokeStyle = "#241A14";
+      context.stroke();
+
+      context.fillStyle = "#241A14";
+      context.fillText(name, nameX + 18, nameY + 21);
+
+      const venue = "90's Cafe, Khammam";
+
+      context.font = "bold 15px sans-serif";
+
+      const venueWidth = context.measureText(venue).width + 28;
+      const venueX = width - venueWidth - 16;
+      const venueY = height - 42;
+
+      roundRect(
+        context,
+        venueX,
+        venueY,
+        venueWidth,
+        28,
+        14
+      );
+
+      context.fillStyle = "rgba(36,26,20,0.82)";
+      context.fill();
+
+      context.fillStyle = "#F7EFD9";
+      context.fillText(venue, venueX + 14, venueY + 15);
+
+      context.restore();
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      context.beginPath();
+      context.moveTo(x + radius, y);
+      context.arcTo(x + width, y, x + width, y + height, radius);
+      context.arcTo(x + width, y + height, x, y + height, radius);
+      context.arcTo(x, y + height, x, y, radius);
+      context.arcTo(x, y, x + width, y, radius);
+      context.closePath();
+    }
+
+    async function openCapturePreview() {
+      const blob = await createCapture();
+
+      if (!blob) {
+        showToast("Capture failed. Please try again.");
+        return;
+      }
+
+      latestCaptureBlob = blob;
+
+      if (latestCaptureUrl) {
+        URL.revokeObjectURL(latestCaptureUrl);
+      }
+
+      latestCaptureUrl = URL.createObjectURL(blob);
+
+      captureImage.src = latestCaptureUrl;
+
+      capturePreview.classList.add("visible");
+    }
+
+    function downloadCapture() {
+      if (!latestCaptureUrl) {
+        return;
+      }
+
+      const currentTarget = targets.find(
+        (target) => target.index === activeIndex
+      );
+
+      const filenamePart = currentTarget
+        ? currentTarget.name.toLowerCase().replace(/\s+/g, "-")
+        : "memeverse";
+
+      const downloadLink = document.createElement("a");
+
+      downloadLink.href = latestCaptureUrl;
+      downloadLink.download = `memeverse-${filenamePart}.png`;
+
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+    }
+
+    async function shareCapture() {
+      if (!latestCaptureBlob) {
+        return;
+      }
+
+      const shareFile = new File(
+        [latestCaptureBlob],
+        "memeverse-90s-cafe-khammam.png",
+        { type: "image/png" }
+      );
+
+      try {
+        if (
+          navigator.share &&
+          navigator.canShare &&
+          navigator.canShare({ files: [shareFile] })
+        ) {
+          await navigator.share({
+            title: "MEMEVERSE — 90's Cafe, Khammam",
+            text: "I found a comedy moment at MEMEVERSE!",
+            files: [shareFile]
+          });
+
+          return;
+        }
+
+        if (navigator.share) {
+          await navigator.share({
+            title: "MEMEVERSE — 90's Cafe, Khammam",
+            text: "I found a comedy moment at MEMEVERSE!"
+          });
+
+          return;
+        }
+
+        downloadCapture();
+
+        showToast(
+          "Your browser does not support sharing, so the image was downloaded."
+        );
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.warn("MEMEVERSE: Share failed:", error);
+
+          showToast(
+            "Could not open sharing. Please use Download instead."
+          );
+        }
+      }
+    }
+
+    captureBtn.addEventListener("click", openCapturePreview);
+
+    shareBtn.addEventListener("click", async () => {
+      await openCapturePreview();
+    });
+
+    downloadCaptureBtn.addEventListener("click", downloadCapture);
+
+    shareCaptureBtn.addEventListener("click", shareCapture);
+
+    closeCaptureBtn.addEventListener("click", () => {
+      capturePreview.classList.remove("visible");
+    });
+
+    sceneEl.addEventListener("loaded", () => {
+      targets.forEach((t) => {
+        if (t.frameEntity && t.frameEntity.object3D) {
+          t.frameEntity.object3D.scale.set(
+            0.001,
+            0.001,
+            0.001
+          );
+        }
+
+        if (t.videoEntity && t.videoEntity.object3D) {
+          t.videoEntity.object3D.scale.set(
+            0.001,
+            0.001,
+            0.001
+          );
+        }
+      });
+    });
+  </script>
+</body>
+</html>
