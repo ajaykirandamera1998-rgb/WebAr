@@ -37,37 +37,41 @@
         const THREE = AFRAME.THREE;
         const { innerWidth, innerHeight, borderScale } = this.data;
 
-        const outerW = innerWidth * borderScale;
-        const outerH = innerHeight * borderScale;
+        const outerWidth = innerWidth * borderScale;
+        const outerHeight = innerHeight * borderScale;
 
         const canvas = document.createElement("canvas");
         canvas.width = 1024;
-        canvas.height = Math.round(1024 * (outerH / outerW));
+        canvas.height = Math.round(
+          1024 * (outerHeight / outerWidth)
+        );
 
-        const ctx = canvas.getContext("2d");
+        const context = canvas.getContext("2d");
 
-        const marginFrac = (borderScale - 1) / (2 * borderScale);
-        const mx = canvas.width * marginFrac;
-        const my = canvas.height * marginFrac;
+        const marginFraction =
+          (borderScale - 1) / (2 * borderScale);
+
+        const marginX = canvas.width * marginFraction;
+        const marginY = canvas.height * marginFraction;
 
         const outerRadius = canvas.width * 0.035;
         const innerRadius = canvas.width * 0.018;
 
         function roundedRectPath(x, y, width, height, radius) {
-          ctx.beginPath();
-          ctx.moveTo(x + radius, y);
-          ctx.arcTo(x + width, y, x + width, y + height, radius);
-          ctx.arcTo(x + width, y + height, x, y + height, radius);
-          ctx.arcTo(x, y + height, x, y, radius);
-          ctx.arcTo(x, y, x + width, y, radius);
-          ctx.closePath();
+          context.beginPath();
+          context.moveTo(x + radius, y);
+          context.arcTo(x + width, y, x + width, y + height, radius);
+          context.arcTo(x + width, y + height, x, y + height, radius);
+          context.arcTo(x, y + height, x, y, radius);
+          context.arcTo(x, y, x + width, y, radius);
+          context.closePath();
         }
 
-        /* Outer cream comic card */
-        ctx.save();
-        ctx.shadowColor = "rgba(36, 26, 20, 0.42)";
-        ctx.shadowBlur = canvas.width * 0.028;
-        ctx.shadowOffsetY = canvas.width * 0.014;
+        context.save();
+
+        context.shadowColor = "rgba(36, 26, 20, 0.42)";
+        context.shadowBlur = canvas.width * 0.028;
+        context.shadowOffsetY = canvas.width * 0.014;
 
         roundedRectPath(
           0,
@@ -77,11 +81,11 @@
           outerRadius
         );
 
-        ctx.fillStyle = "#F7EFD9";
-        ctx.fill();
-        ctx.restore();
+        context.fillStyle = "#F7EFD9";
+        context.fill();
 
-        /* Outer black outline */
+        context.restore();
+
         roundedRectPath(
           0,
           0,
@@ -90,37 +94,37 @@
           outerRadius
         );
 
-        ctx.lineWidth = canvas.width * 0.014;
-        ctx.strokeStyle = "#241A14";
-        ctx.stroke();
+        context.lineWidth = canvas.width * 0.014;
+        context.strokeStyle = "#241A14";
+        context.stroke();
 
-        /* Transparent hole where video appears */
-        ctx.save();
-        ctx.globalCompositeOperation = "destination-out";
+        context.save();
+
+        context.globalCompositeOperation = "destination-out";
 
         roundedRectPath(
-          mx,
-          my,
-          canvas.width - mx * 2,
-          canvas.height - my * 2,
+          marginX,
+          marginY,
+          canvas.width - marginX * 2,
+          canvas.height - marginY * 2,
           innerRadius
         );
 
-        ctx.fill();
-        ctx.restore();
+        context.fill();
 
-        /* Inner black outline */
+        context.restore();
+
         roundedRectPath(
-          mx,
-          my,
-          canvas.width - mx * 2,
-          canvas.height - my * 2,
+          marginX,
+          marginY,
+          canvas.width - marginX * 2,
+          canvas.height - marginY * 2,
           innerRadius
         );
 
-        ctx.lineWidth = canvas.width * 0.009;
-        ctx.strokeStyle = "#241A14";
-        ctx.stroke();
+        context.lineWidth = canvas.width * 0.009;
+        context.strokeStyle = "#241A14";
+        context.stroke();
 
         const texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
@@ -129,7 +133,10 @@
           texture.colorSpace = THREE.SRGBColorSpace;
         }
 
-        const geometry = new THREE.PlaneGeometry(outerW, outerH);
+        const geometry = new THREE.PlaneGeometry(
+          outerWidth,
+          outerHeight
+        );
 
         const material = new THREE.MeshBasicMaterial({
           map: texture,
@@ -139,6 +146,7 @@
         });
 
         const mesh = new THREE.Mesh(geometry, material);
+
         mesh.renderOrder = 0;
 
         this.el.setObject3D("mesh", mesh);
@@ -158,30 +166,49 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: #000;
+      background: transparent;
       touch-action: manipulation;
     }
 
-    /* MindAR-generated camera layer */
-    video.mindar-video {
+    /*
+      MindAR creates its own camera video element.
+      Different builds may use different classes, so we safely target
+      direct body video elements too. Your content videos are inside
+      <a-assets>, so this will not affect video-0 through video-11.
+    */
+    body > video,
+    video.mindar-video,
+    video.mindar-video-element {
       position: fixed !important;
-      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
       z-index: 0 !important;
+
       display: block !important;
 
       width: 100vw !important;
       height: 100vh !important;
+
       min-width: 100vw !important;
       min-height: 100vh !important;
 
       object-fit: cover !important;
-      background: #000 !important;
+      object-position: center !important;
+
+      background: transparent !important;
     }
 
+    /*
+      MindAR uses a processing canvas. Keep it behind the A-Frame
+      scene but above the camera video.
+    */
+    body > canvas,
     canvas.mindar-canvas {
       position: fixed !important;
-      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
       z-index: 1 !important;
+
       display: block !important;
 
       width: 100vw !important;
@@ -194,6 +221,7 @@
       position: fixed !important;
       inset: 0 !important;
       z-index: 2 !important;
+
       display: block !important;
 
       width: 100vw !important;
@@ -206,6 +234,7 @@
       position: fixed !important;
       inset: 0 !important;
       z-index: 2 !important;
+
       display: block !important;
 
       width: 100vw !important;
@@ -255,6 +284,7 @@
       height: 220vw;
 
       border-radius: 50%;
+
       transform: translate(-50%, -50%);
 
       background: repeating-conic-gradient(
@@ -270,6 +300,7 @@
       margin: 0;
 
       color: #7a2426;
+
       font-family: "Baloo 2", sans-serif;
       font-size: clamp(48px, 15vw, 74px);
       font-weight: 800;
@@ -283,6 +314,7 @@
 
     #entry-subtitle {
       position: relative;
+
       margin-top: 14px;
       padding: 7px 22px;
 
@@ -299,10 +331,12 @@
 
     #entry-hint {
       position: relative;
+
       max-width: 310px;
       margin: 26px 0 0;
 
       color: #241a14;
+
       font-family: "Fredoka", sans-serif;
       font-size: 14px;
       line-height: 1.5;
@@ -312,6 +346,7 @@
 
     #entry-btn {
       position: relative;
+
       margin-top: 22px;
       padding: 14px 38px;
 
@@ -360,13 +395,16 @@
 
     #scan-frame {
       position: relative;
+
       width: 58vw;
       max-width: 320px;
+
       aspect-ratio: 1 / 1.15;
     }
 
     #scan-frame .corner {
       position: absolute;
+
       width: 34px;
       height: 34px;
 
@@ -389,32 +427,40 @@
     #scan-frame .tl {
       top: 0;
       left: 0;
+
       border-right: none;
       border-bottom: none;
+
       border-radius: 10px 0 0 0;
     }
 
     #scan-frame .tr {
       top: 0;
       right: 0;
+
       border-bottom: none;
       border-left: none;
+
       border-radius: 0 10px 0 0;
     }
 
     #scan-frame .bl {
       bottom: 0;
       left: 0;
+
       border-top: none;
       border-right: none;
+
       border-radius: 0 0 0 10px;
     }
 
     #scan-frame .br {
       right: 0;
       bottom: 0;
+
       border-top: none;
       border-left: none;
+
       border-radius: 0 0 10px 0;
     }
 
@@ -424,6 +470,7 @@
       left: 50%;
 
       padding: 6px 16px;
+
       border-radius: 999px;
 
       transform: translateX(-50%);
@@ -451,10 +498,12 @@
 
     .ambient-dot {
       position: absolute;
+
       width: 6px;
       height: 6px;
 
       border-radius: 50%;
+
       background: #e8a62e;
 
       opacity: 0;
@@ -471,8 +520,9 @@
       z-index: 52;
 
       width: 18vw !important;
-      max-width: 115px;
       min-width: 62px;
+      max-width: 115px;
+
       height: auto !important;
 
       transform: none;
@@ -487,11 +537,12 @@
       border-radius: 14px;
 
       background: #f7efd9;
+
       box-shadow: 3px 3px 0 #241a14;
     }
 
     /* ------------------------------------------------------------- */
-    /* Comedian name card                                            */
+    /* Target name badge                                             */
     /* ------------------------------------------------------------- */
 
     #comedian-badge {
@@ -570,6 +621,7 @@
       z-index: 60;
 
       display: none;
+
       min-height: 42px;
       padding: 9px 13px;
 
@@ -593,18 +645,21 @@
 
     #sound-btn {
       bottom: 18px;
+
       background: #1b6b67;
       color: #f7efd9;
     }
 
     #capture-btn {
       bottom: 70px;
+
       background: #e8a62e;
       color: #241a14;
     }
 
     #share-btn {
       bottom: 122px;
+
       background: #c1432e;
       color: #fff;
     }
@@ -617,7 +672,7 @@
     }
 
     /* ------------------------------------------------------------- */
-    /* Venue text                                                    */
+    /* Bottom-right venue label                                      */
     /* ------------------------------------------------------------- */
 
     #venue-label {
@@ -653,10 +708,12 @@
       z-index: 110;
 
       display: none;
+
       max-width: 86vw;
       padding: 12px 18px;
 
       border-radius: 14px;
+
       transform: translateX(-50%);
 
       background: rgba(20, 10, 8, 0.94);
@@ -707,6 +764,7 @@
       border-radius: 18px;
 
       background: #f7efd9;
+
       box-shadow: 7px 7px 0 #e8a62e;
     }
 
@@ -720,6 +778,7 @@
       border-radius: 10px;
 
       object-fit: contain;
+
       background: #000;
     }
 
@@ -735,6 +794,7 @@
     #share-capture-btn,
     #close-capture-btn {
       flex: 1;
+
       padding: 10px 8px;
 
       border: 3px solid #241a14;
@@ -861,6 +921,7 @@
       uiLoading: no;
       uiScanning: no;
       uiError: no;
+      autoStart: true;
       maxTrack: 1;
       filterMinCF: 0.0001;
       filterBeta: 0.001;
@@ -900,63 +961,195 @@
     ></a-camera>
 
     <a-entity id="target-0" mindar-image-target="targetIndex: 0">
-      <a-entity id="comic-frame-0" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-0" src="#video-0" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-0"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-0"
+        src="#video-0"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-1" mindar-image-target="targetIndex: 1">
-      <a-entity id="comic-frame-1" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-1" src="#video-1" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-1"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-1"
+        src="#video-1"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-2" mindar-image-target="targetIndex: 2">
-      <a-entity id="comic-frame-2" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-2" src="#video-2" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-2"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-2"
+        src="#video-2"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-3" mindar-image-target="targetIndex: 3">
-      <a-entity id="comic-frame-3" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-3" src="#video-3" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-3"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-3"
+        src="#video-3"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-4" mindar-image-target="targetIndex: 4">
-      <a-entity id="comic-frame-4" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-4" src="#video-4" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-4"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-4"
+        src="#video-4"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-5" mindar-image-target="targetIndex: 5">
-      <a-entity id="comic-frame-5" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-5" src="#video-5" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-5"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-5"
+        src="#video-5"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-6" mindar-image-target="targetIndex: 6">
-      <a-entity id="comic-frame-6" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-6" src="#video-6" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-6"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-6"
+        src="#video-6"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-7" mindar-image-target="targetIndex: 7">
-      <a-entity id="comic-frame-7" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-7" src="#video-7" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-7"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-7"
+        src="#video-7"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-8" mindar-image-target="targetIndex: 8">
-      <a-entity id="comic-frame-8" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-8" src="#video-8" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-8"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-8"
+        src="#video-8"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-9" mindar-image-target="targetIndex: 9">
-      <a-entity id="comic-frame-9" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-9" src="#video-9" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-9"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-9"
+        src="#video-9"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-10" mindar-image-target="targetIndex: 10">
-      <a-entity id="comic-frame-10" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-10" src="#video-10" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-10"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-10"
+        src="#video-10"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
 
     <a-entity id="target-11" mindar-image-target="targetIndex: 11">
-      <a-entity id="comic-frame-11" comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14" position="0 0 -0.015"></a-entity>
-      <a-video id="video-entity-11" src="#video-11" width="1" height="0.55" position="0 0 0"></a-video>
+      <a-entity
+        id="comic-frame-11"
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
+        position="0 0 -0.015"
+      ></a-entity>
+
+      <a-video
+        id="video-entity-11"
+        src="#video-11"
+        width="1"
+        height="0.55"
+        position="0 0 0"
+      ></a-video>
     </a-entity>
   </a-scene>
 
@@ -973,7 +1166,9 @@
     const loopGifEl = document.querySelector("#loop-gif");
 
     const comedianBadge = document.querySelector("#comedian-badge");
-    const comedianBadgeLabel = document.querySelector("#comedian-badge-label");
+    const comedianBadgeLabel = document.querySelector(
+      "#comedian-badge-label"
+    );
 
     const videoStatus = document.querySelector("#video-status");
 
@@ -984,9 +1179,17 @@
     const capturePreview = document.querySelector("#capture-preview");
     const captureImage = document.querySelector("#capture-image");
 
-    const downloadCaptureBtn = document.querySelector("#download-capture-btn");
-    const shareCaptureBtn = document.querySelector("#share-capture-btn");
-    const closeCaptureBtn = document.querySelector("#close-capture-btn");
+    const downloadCaptureBtn = document.querySelector(
+      "#download-capture-btn"
+    );
+
+    const shareCaptureBtn = document.querySelector(
+      "#share-capture-btn"
+    );
+
+    const closeCaptureBtn = document.querySelector(
+      "#close-capture-btn"
+    );
 
     const ROSTER = [
       { index: 0, name: "Brahmanandam" },
@@ -1006,13 +1209,10 @@
     const targets = ROSTER.map(({ index, name }) => ({
       index,
       name,
-
       targetEntity: document.querySelector(`#target-${index}`),
       video: document.querySelector(`#video-${index}`),
-
       frameEntity: document.querySelector(`#comic-frame-${index}`),
       videoEntity: document.querySelector(`#video-entity-${index}`),
-
       lossTimer: null
     }));
 
@@ -1024,7 +1224,7 @@
       4: ["./Gifs/2.gif", "./Gifs/4.gif"],
       5: ["./Gifs/5.gif", "./Gifs/7.gif"],
       6: ["./Gifs/1.gif", "./Gifs/6.gif"],
-      7: ["./Gifs/2.gif", "./gifs/5.gif"],
+      7: ["./Gifs/2.gif", "./Gifs/5.gif"],
       8: ["./Gifs/3.gif", "./Gifs/6.gif"],
       9: ["./Gifs/4.gif", "./Gifs/7.gif"],
       10: ["./Gifs/1.gif", "./Gifs/5.gif"],
@@ -1035,15 +1235,10 @@
     const TARGET_LOSS_DELAY_MS = 900;
 
     let activeIndex = null;
-    let arStarted = false;
-
     let audioCtx = null;
-
     let gifTimer = null;
     let gifIndex = 0;
-
     let ambientTimer = null;
-
     let latestCaptureBlob = null;
     let latestCaptureUrl = null;
 
@@ -1067,38 +1262,45 @@
       type = "triangle",
       volume = 0.2
     }) {
-      const ctx = getAudioCtx();
+      const context = getAudioCtx();
 
-      const oscillator = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
 
       oscillator.type = type;
-      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+
+      oscillator.frequency.setValueAtTime(
+        freq,
+        context.currentTime
+      );
 
       if (endFreq) {
         oscillator.frequency.exponentialRampToValueAtTime(
           endFreq,
-          ctx.currentTime + duration * 0.65
+          context.currentTime + duration * 0.65
         );
       }
 
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.setValueAtTime(
+        0.0001,
+        context.currentTime
+      );
 
       gain.gain.exponentialRampToValueAtTime(
         volume,
-        ctx.currentTime + 0.02
+        context.currentTime + 0.02
       );
 
       gain.gain.exponentialRampToValueAtTime(
         0.0001,
-        ctx.currentTime + duration
+        context.currentTime + duration
       );
 
       oscillator.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(context.destination);
 
       oscillator.start();
-      oscillator.stop(ctx.currentTime + duration + 0.05);
+      oscillator.stop(context.currentTime + duration + 0.05);
     }
 
     function playTapSound() {
@@ -1178,23 +1380,23 @@
     }
 
     function stopAllVideos(exceptIndex = null) {
-      targets.forEach((t) => {
-        if (!t.video || t.index === exceptIndex) {
+      targets.forEach((target) => {
+        if (!target.video || target.index === exceptIndex) {
           return;
         }
 
-        t.video.pause();
-        t.video.currentTime = 0;
-        t.video.muted = true;
+        target.video.pause();
+        target.video.currentTime = 0;
+        target.video.muted = true;
       });
     }
 
-    function revealSequence(t) {
-      if (t.frameEntity && t.frameEntity.object3D) {
-        gsap.killTweensOf(t.frameEntity.object3D.scale);
+    function revealSequence(target) {
+      if (target.frameEntity && target.frameEntity.object3D) {
+        gsap.killTweensOf(target.frameEntity.object3D.scale);
 
         gsap.fromTo(
-          t.frameEntity.object3D.scale,
+          target.frameEntity.object3D.scale,
           {
             x: 0.001,
             y: 0.001,
@@ -1210,11 +1412,11 @@
         );
       }
 
-      if (t.videoEntity && t.videoEntity.object3D) {
-        gsap.killTweensOf(t.videoEntity.object3D.scale);
+      if (target.videoEntity && target.videoEntity.object3D) {
+        gsap.killTweensOf(target.videoEntity.object3D.scale);
 
         gsap.fromTo(
-          t.videoEntity.object3D.scale,
+          target.videoEntity.object3D.scale,
           {
             x: 0.001,
             y: 0.001,
@@ -1232,17 +1434,17 @@
       }
 
       window.setTimeout(() => {
-        if (activeIndex === t.index) {
-          startGifLoop(t.index);
+        if (activeIndex === target.index) {
+          startGifLoop(target.index);
         }
       }, 250);
     }
 
-    function hideSequence(t) {
-      if (t.frameEntity && t.frameEntity.object3D) {
-        gsap.killTweensOf(t.frameEntity.object3D.scale);
+    function hideSequence(target) {
+      if (target.frameEntity && target.frameEntity.object3D) {
+        gsap.killTweensOf(target.frameEntity.object3D.scale);
 
-        gsap.to(t.frameEntity.object3D.scale, {
+        gsap.to(target.frameEntity.object3D.scale, {
           x: 0.001,
           y: 0.001,
           z: 0.001,
@@ -1251,10 +1453,10 @@
         });
       }
 
-      if (t.videoEntity && t.videoEntity.object3D) {
-        gsap.killTweensOf(t.videoEntity.object3D.scale);
+      if (target.videoEntity && target.videoEntity.object3D) {
+        gsap.killTweensOf(target.videoEntity.object3D.scale);
 
-        gsap.to(t.videoEntity.object3D.scale, {
+        gsap.to(target.videoEntity.object3D.scale, {
           x: 0.001,
           y: 0.001,
           z: 0.001,
@@ -1264,83 +1466,94 @@
       }
     }
 
-    async function playTargetVideo(t) {
-      if (!t.video) {
-        showToast(`Missing video element for ${t.name}.`);
+    async function playTargetVideo(target) {
+      if (!target.video) {
+        showToast(`Missing video element for ${target.name}.`);
         return;
       }
 
-      stopAllVideos(t.index);
+      stopAllVideos(target.index);
 
-      t.video.pause();
-      t.video.currentTime = 0;
+      target.video.pause();
+      target.video.currentTime = 0;
 
       /*
-        Muted video can start automatically much more reliably on mobile.
-        User can press the Sound button later.
+        Keep videos muted until the user explicitly taps Sound.
+        Muted video playback is the most dependable mobile behavior.
       */
-      t.video.muted = true;
+      target.video.muted = true;
 
       showVideoStatus("Loading dialogue...");
 
       try {
-        if (t.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-          t.video.load();
+        if (
+          target.video.readyState <
+          HTMLMediaElement.HAVE_CURRENT_DATA
+        ) {
+          target.video.load();
         }
 
-        await t.video.play();
+        await target.video.play();
 
         hideVideoStatus();
 
         console.log(
-          `MEMEVERSE: Playing ${t.name}.`,
-          `readyState: ${t.video.readyState}`
+          `MEMEVERSE: Playing ${target.name}.`,
+          `readyState: ${target.video.readyState}`
         );
       } catch (error) {
         console.error(
-          `MEMEVERSE: Video failed for ${t.name}:`,
+          `MEMEVERSE: Video playback failed for ${target.name}:`,
           error
         );
 
         hideVideoStatus();
 
         showToast(
-          `${t.name}'s video could not play. Check the file path and use H.264 MP4.`
+          `${target.name}'s video could not play. Check the file path and encode it as H.264 MP4.`
         );
       }
     }
 
-    targets.forEach((t) => {
-      if (!t.video) {
-        console.error(`MEMEVERSE: Missing #video-${t.index}.`);
+    targets.forEach((target) => {
+      if (!target.video) {
+        console.error(
+          `MEMEVERSE: Missing #video-${target.index}.`
+        );
+
         return;
       }
 
-      t.video.addEventListener("loadedmetadata", () => {
+      target.video.addEventListener("loadedmetadata", () => {
         console.log(
-          `MEMEVERSE: Metadata loaded for ${t.name}:`,
-          `${t.video.videoWidth}x${t.video.videoHeight}`
+          `MEMEVERSE: Metadata loaded for ${target.name}:`,
+          `${target.video.videoWidth}x${target.video.videoHeight}`
         );
       });
 
-      t.video.addEventListener("canplay", () => {
-        console.log(`MEMEVERSE: Can play ${t.name}.`);
+      target.video.addEventListener("canplay", () => {
+        console.log(
+          `MEMEVERSE: Can play ${target.name}.`
+        );
       });
 
-      t.video.addEventListener("error", () => {
-        const mediaError = t.video.error;
+      target.video.addEventListener("error", () => {
+        const mediaError = target.video.error;
 
-        console.error(`MEMEVERSE: Video error for ${t.name}:`, {
-          source: t.video.currentSrc,
-          code: mediaError ? mediaError.code : "unknown",
-          message: mediaError ? mediaError.message : "unknown"
-        });
+        console.error(
+          `MEMEVERSE: Video error for ${target.name}:`,
+          {
+            source: target.video.currentSrc,
+            code: mediaError ? mediaError.code : "unknown",
+            message: mediaError ? mediaError.message : "unknown"
+          }
+        );
 
-        if (activeIndex === t.index) {
+        if (activeIndex === target.index) {
           hideVideoStatus();
 
           showToast(
-            `${t.name}'s clip could not load. Verify the filename and encode it as H.264/AAC MP4.`
+            `${target.name}'s clip could not load. Check the exact filename and use H.264/AAC MP4.`
           );
         }
       });
@@ -1351,7 +1564,9 @@
       { opacity: 0 }
     );
 
-    gsap.set("#entry-title", { scale: 0.7 });
+    gsap.set("#entry-title", {
+      scale: 0.7
+    });
 
     gsap.to("#entry-sunburst", {
       rotate: 360,
@@ -1371,43 +1586,45 @@
         },
         0.1
       )
-      .to("#entry-subtitle", { opacity: 1, duration: 0.4 }, 0.4)
-      .to("#entry-hint", { opacity: 1, duration: 0.4 }, 0.6)
-      .to("#entry-btn", { opacity: 1, duration: 0.4 }, 0.75);
-
-    sceneEl.addEventListener("arReady", () => {
-      console.log("MEMEVERSE: MindAR ready.");
-    });
-
-    sceneEl.addEventListener("arError", (event) => {
-      console.error("MEMEVERSE: MindAR error:", event.detail);
-
-      showToast(
-        "Camera could not start. Allow camera permission and use HTTPS or localhost."
+      .to(
+        "#entry-subtitle",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.4
+      )
+      .to(
+        "#entry-hint",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.6
+      )
+      .to(
+        "#entry-btn",
+        {
+          opacity: 1,
+          duration: 0.4
+        },
+        0.75
       );
-    });
 
+    /*
+      MindAR starts automatically because autoStart: true is in the
+      <a-scene> config. It will request camera permission as the scene
+      initializes. The entry button only closes the introduction UI.
+    */
     entryBtn.addEventListener("click", async () => {
       try {
-        const ctx = getAudioCtx();
+        const context = getAudioCtx();
 
-        if (ctx.state === "suspended") {
-          await ctx.resume();
+        if (context.state === "suspended") {
+          await context.resume();
         }
 
         playTapSound();
-
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-
-        if (mindarSystem && !arStarted) {
-          arStarted = true;
-
-          try {
-            await mindarSystem.start();
-          } catch (error) {
-            console.warn("MindAR start response:", error);
-          }
-        }
 
         gsap.to("#entry-screen", {
           opacity: 0,
@@ -1425,85 +1642,149 @@
           }
         });
       } catch (error) {
-        console.error("MEMEVERSE: Start error:", error);
+        console.error("MEMEVERSE: Entry error:", error);
 
         showToast(
-          "Could not start AR. Allow camera permission, then reload the page."
+          "Could not begin. Reload and allow camera permission."
         );
       }
     });
 
-    targets.forEach((t) => {
-      if (!t.targetEntity) {
-        console.warn(`MEMEVERSE: Missing target-${t.index}.`);
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MEMEVERSE: MindAR is ready.");
+      errorToast.classList.remove("visible");
+    });
+
+    sceneEl.addEventListener("arError", (event) => {
+      console.error(
+        "MEMEVERSE: MindAR camera error:",
+        event.detail
+      );
+
+      showToast(
+        "Camera could not start. Allow camera permission and open using HTTPS or localhost."
+      );
+    });
+
+    /*
+      Shows whether MindAR has actually created a live camera element.
+      Use browser developer tools Console if the screen is still black.
+    */
+    window.addEventListener("load", () => {
+      window.setTimeout(() => {
+        const cameraVideo =
+          document.querySelector("video.mindar-video") ||
+          document.querySelector("video.mindar-video-element") ||
+          document.querySelector("body > video");
+
+        console.log(
+          "MEMEVERSE: MindAR camera video element:",
+          cameraVideo
+        );
+
+        if (cameraVideo) {
+          console.log("MEMEVERSE: Camera video status:", {
+            paused: cameraVideo.paused,
+            readyState: cameraVideo.readyState,
+            width: cameraVideo.videoWidth,
+            height: cameraVideo.videoHeight,
+            hasStream: Boolean(cameraVideo.srcObject)
+          });
+        } else {
+          console.warn(
+            "MEMEVERSE: No MindAR camera video element was found."
+          );
+        }
+      }, 3500);
+    });
+
+    targets.forEach((target) => {
+      if (!target.targetEntity) {
+        console.warn(
+          `MEMEVERSE: Missing target-${target.index}.`
+        );
+
         return;
       }
 
-      t.targetEntity.addEventListener("targetFound", async () => {
-        window.clearTimeout(t.lossTimer);
+      target.targetEntity.addEventListener(
+        "targetFound",
+        async () => {
+          window.clearTimeout(target.lossTimer);
 
-        if (activeIndex !== null && activeIndex !== t.index) {
-          return;
-        }
-
-        const alreadyActive = activeIndex === t.index;
-
-        activeIndex = t.index;
-
-        scanHud.classList.remove("visible");
-        stopAmbientParticles();
-
-        if (alreadyActive) {
-          return;
-        }
-
-        console.log(`MEMEVERSE: Target found: ${t.name}.`);
-
-        showComedianBadge(t.name);
-        showActionButtons();
-
-        soundBtn.textContent = "🔊 Sound";
-
-        playLockOnChime();
-        revealSequence(t);
-
-        await playTargetVideo(t);
-      });
-
-      t.targetEntity.addEventListener("targetLost", () => {
-        if (activeIndex !== t.index) {
-          return;
-        }
-
-        window.clearTimeout(t.lossTimer);
-
-        t.lossTimer = window.setTimeout(() => {
-          if (activeIndex !== t.index) {
+          if (
+            activeIndex !== null &&
+            activeIndex !== target.index
+          ) {
             return;
           }
 
-          console.log(`MEMEVERSE: Target lost: ${t.name}.`);
+          const alreadyActive = activeIndex === target.index;
 
-          activeIndex = null;
+          activeIndex = target.index;
 
-          if (t.video) {
-            t.video.pause();
-            t.video.currentTime = 0;
-            t.video.muted = true;
+          scanHud.classList.remove("visible");
+          stopAmbientParticles();
+
+          if (alreadyActive) {
+            return;
           }
 
-          stopGifLoop();
-          hideSequence(t);
-          hideComedianBadge();
-          hideVideoStatus();
-          hideActionButtons();
+          console.log(
+            `MEMEVERSE: Target found: ${target.name}.`
+          );
 
-          if (entryScreen.classList.contains("hidden")) {
-            scanHud.classList.add("visible");
-            startAmbientParticles();
+          showComedianBadge(target.name);
+          showActionButtons();
+
+          soundBtn.textContent = "🔊 Sound";
+
+          playLockOnChime();
+          revealSequence(target);
+
+          await playTargetVideo(target);
+        }
+      );
+
+      target.targetEntity.addEventListener(
+        "targetLost",
+        () => {
+          if (activeIndex !== target.index) {
+            return;
           }
-        }, TARGET_LOSS_DELAY_MS);
-      });
+
+          window.clearTimeout(target.lossTimer);
+
+          target.lossTimer = window.setTimeout(() => {
+            if (activeIndex !== target.index) {
+              return;
+            }
+
+            console.log(
+              `MEMEVERSE: Target lost: ${target.name}.`
+            );
+
+            activeIndex = null;
+
+            if (target.video) {
+              target.video.pause();
+              target.video.currentTime = 0;
+              target.video.muted = true;
+            }
+
+            stopGifLoop();
+            hideSequence(target);
+            hideComedianBadge();
+            hideVideoStatus();
+            hideActionButtons();
+
+            if (entryScreen.classList.contains("hidden")) {
+              scanHud.classList.add("visible");
+              startAmbientParticles();
+            }
+          }, TARGET_LOSS_DELAY_MS);
+        }
+      );
     });
 
     soundBtn.addEventListener("click", async () => {
@@ -1511,32 +1792,35 @@
         return;
       }
 
-      const activeTarget = targets.find(
-        (target) => target.index === activeIndex
+      const target = targets.find(
+        (item) => item.index === activeIndex
       );
 
-      if (!activeTarget || !activeTarget.video) {
+      if (!target || !target.video) {
         return;
       }
 
       try {
-        const ctx = getAudioCtx();
+        const context = getAudioCtx();
 
-        if (ctx.state === "suspended") {
-          await ctx.resume();
+        if (context.state === "suspended") {
+          await context.resume();
         }
 
-        activeTarget.video.muted = !activeTarget.video.muted;
+        target.video.muted = !target.video.muted;
 
-        if (activeTarget.video.paused) {
-          await activeTarget.video.play();
+        if (target.video.paused) {
+          await target.video.play();
         }
 
-        soundBtn.textContent = activeTarget.video.muted
+        soundBtn.textContent = target.video.muted
           ? "🔊 Sound"
           : "🔇 Mute";
       } catch (error) {
-        console.error("MEMEVERSE: Could not toggle sound:", error);
+        console.error(
+          "MEMEVERSE: Sound toggle failed:",
+          error
+        );
 
         showToast(
           "Sound could not start. Tap the Sound button once more."
@@ -1570,7 +1854,9 @@
     });
 
     loopGifEl.addEventListener("error", () => {
-      console.warn(`MEMEVERSE: GIF failed: ${loopGifEl.src}`);
+      console.warn(
+        `MEMEVERSE: GIF failed to load: ${loopGifEl.src}`
+      );
 
       loopGifEl.style.opacity = "0";
       setGifClip(0);
@@ -1594,9 +1880,6 @@
       loopGifEl.style.opacity = "0";
       setGifClip(0);
 
-      /*
-        Cache-busting query makes it easier to see file changes while testing.
-      */
       loopGifEl.src = `${source}?v=${Date.now()}`;
     }
 
@@ -1653,7 +1936,14 @@
           dot.remove();
         }
       })
-        .to(dot, { opacity: 0.6, duration: 0.4 }, 0)
+        .to(
+          dot,
+          {
+            opacity: 0.6,
+            duration: 0.4
+          },
+          0
+        )
         .to(
           dot,
           {
@@ -1664,7 +1954,14 @@
           },
           0
         )
-        .to(dot, { opacity: 0, duration: 0.5 }, 1.9);
+        .to(
+          dot,
+          {
+            opacity: 0,
+            duration: 0.5
+          },
+          1.9
+        );
     }
 
     function startAmbientParticles() {
@@ -1690,7 +1987,11 @@
 
     async function createCapture() {
       const arCanvas = sceneEl.canvas;
-      const cameraVideo = document.querySelector("video.mindar-video");
+
+      const cameraVideo =
+        document.querySelector("video.mindar-video") ||
+        document.querySelector("video.mindar-video-element") ||
+        document.querySelector("body > video");
 
       if (!arCanvas) {
         showToast("AR canvas is not ready yet.");
@@ -1710,25 +2011,39 @@
       context.fillStyle = "#000";
       context.fillRect(0, 0, width, height);
 
-      /*
-        Some mobile browsers may block drawing live camera video onto
-        a canvas. In that case, the AR layer and branding can still appear.
-      */
       if (
         cameraVideo &&
-        cameraVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+        cameraVideo.readyState >=
+          HTMLMediaElement.HAVE_CURRENT_DATA
       ) {
         try {
-          drawCover(context, cameraVideo, width, height);
+          drawCover(
+            context,
+            cameraVideo,
+            width,
+            height
+          );
         } catch (error) {
-          console.warn("MEMEVERSE: Camera capture unavailable:", error);
+          console.warn(
+            "MEMEVERSE: Camera cannot be drawn into capture:",
+            error
+          );
         }
       }
 
       try {
-        context.drawImage(arCanvas, 0, 0, width, height);
+        context.drawImage(
+          arCanvas,
+          0,
+          0,
+          width,
+          height
+        );
       } catch (error) {
-        console.warn("MEMEVERSE: AR canvas capture unavailable:", error);
+        console.warn(
+          "MEMEVERSE: A-Frame canvas cannot be drawn into capture:",
+          error
+        );
       }
 
       drawCaptureBranding(context, width, height);
@@ -1742,12 +2057,23 @@
       });
     }
 
-    function drawCover(context, media, targetWidth, targetHeight) {
-      const sourceWidth = media.videoWidth || targetWidth;
-      const sourceHeight = media.videoHeight || targetHeight;
+    function drawCover(
+      context,
+      media,
+      targetWidth,
+      targetHeight
+    ) {
+      const sourceWidth =
+        media.videoWidth || targetWidth;
 
-      const sourceRatio = sourceWidth / sourceHeight;
-      const targetRatio = targetWidth / targetHeight;
+      const sourceHeight =
+        media.videoHeight || targetHeight;
+
+      const sourceRatio =
+        sourceWidth / sourceHeight;
+
+      const targetRatio =
+        targetWidth / targetHeight;
 
       let drawWidth;
       let drawHeight;
@@ -1812,13 +2138,19 @@
       context.stroke();
 
       context.fillStyle = "#241A14";
-      context.fillText(name, nameX + 18, nameY + 21);
+      context.fillText(
+        name,
+        nameX + 18,
+        nameY + 21
+      );
 
       const venue = "90's Cafe, Khammam";
 
       context.font = "bold 15px sans-serif";
 
-      const venueWidth = context.measureText(venue).width + 28;
+      const venueWidth =
+        context.measureText(venue).width + 28;
+
       const venueX = width - venueWidth - 16;
       const venueY = height - 42;
 
@@ -1835,18 +2167,54 @@
       context.fill();
 
       context.fillStyle = "#F7EFD9";
-      context.fillText(venue, venueX + 14, venueY + 15);
+
+      context.fillText(
+        venue,
+        venueX + 14,
+        venueY + 15
+      );
 
       context.restore();
     }
 
-    function roundRect(context, x, y, width, height, radius) {
+    function roundRect(
+      context,
+      x,
+      y,
+      width,
+      height,
+      radius
+    ) {
       context.beginPath();
       context.moveTo(x + radius, y);
-      context.arcTo(x + width, y, x + width, y + height, radius);
-      context.arcTo(x + width, y + height, x, y + height, radius);
-      context.arcTo(x, y + height, x, y, radius);
-      context.arcTo(x, y, x + width, y, radius);
+      context.arcTo(
+        x + width,
+        y,
+        x + width,
+        y + height,
+        radius
+      );
+      context.arcTo(
+        x + width,
+        y + height,
+        x,
+        y + height,
+        radius
+      );
+      context.arcTo(
+        x,
+        y + height,
+        x,
+        y,
+        radius
+      );
+      context.arcTo(
+        x,
+        y,
+        x + width,
+        y,
+        radius
+      );
       context.closePath();
     }
 
@@ -1876,22 +2244,24 @@
         return;
       }
 
-      const currentTarget = targets.find(
+      const activeTarget = targets.find(
         (target) => target.index === activeIndex
       );
 
-      const filenamePart = currentTarget
-        ? currentTarget.name.toLowerCase().replace(/\s+/g, "-")
+      const filenamePart = activeTarget
+        ? activeTarget.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")
         : "memeverse";
 
-      const downloadLink = document.createElement("a");
+      const link = document.createElement("a");
 
-      downloadLink.href = latestCaptureUrl;
-      downloadLink.download = `memeverse-${filenamePart}.png`;
+      link.href = latestCaptureUrl;
+      link.download = `memeverse-${filenamePart}.png`;
 
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      downloadLink.remove();
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
 
     async function shareCapture() {
@@ -1902,14 +2272,18 @@
       const shareFile = new File(
         [latestCaptureBlob],
         "memeverse-90s-cafe-khammam.png",
-        { type: "image/png" }
+        {
+          type: "image/png"
+        }
       );
 
       try {
         if (
           navigator.share &&
           navigator.canShare &&
-          navigator.canShare({ files: [shareFile] })
+          navigator.canShare({
+            files: [shareFile]
+          })
         ) {
           await navigator.share({
             title: "MEMEVERSE — 90's Cafe, Khammam",
@@ -1932,45 +2306,67 @@
         downloadCapture();
 
         showToast(
-          "Your browser does not support sharing, so the image was downloaded."
+          "Sharing is unavailable here, so the image was downloaded."
         );
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.warn("MEMEVERSE: Share failed:", error);
+          console.warn(
+            "MEMEVERSE: Share failed:",
+            error
+          );
 
           showToast(
-            "Could not open sharing. Please use Download instead."
+            "Could not open sharing. Use Download instead."
           );
         }
       }
     }
 
-    captureBtn.addEventListener("click", openCapturePreview);
+    captureBtn.addEventListener(
+      "click",
+      openCapturePreview
+    );
 
-    shareBtn.addEventListener("click", async () => {
-      await openCapturePreview();
-    });
+    shareBtn.addEventListener(
+      "click",
+      openCapturePreview
+    );
 
-    downloadCaptureBtn.addEventListener("click", downloadCapture);
+    downloadCaptureBtn.addEventListener(
+      "click",
+      downloadCapture
+    );
 
-    shareCaptureBtn.addEventListener("click", shareCapture);
+    shareCaptureBtn.addEventListener(
+      "click",
+      shareCapture
+    );
 
-    closeCaptureBtn.addEventListener("click", () => {
-      capturePreview.classList.remove("visible");
-    });
+    closeCaptureBtn.addEventListener(
+      "click",
+      () => {
+        capturePreview.classList.remove("visible");
+      }
+    );
 
     sceneEl.addEventListener("loaded", () => {
-      targets.forEach((t) => {
-        if (t.frameEntity && t.frameEntity.object3D) {
-          t.frameEntity.object3D.scale.set(
+      targets.forEach((target) => {
+        if (
+          target.frameEntity &&
+          target.frameEntity.object3D
+        ) {
+          target.frameEntity.object3D.scale.set(
             0.001,
             0.001,
             0.001
           );
         }
 
-        if (t.videoEntity && t.videoEntity.object3D) {
-          t.videoEntity.object3D.scale.set(
+        if (
+          target.videoEntity &&
+          target.videoEntity.object3D
+        ) {
+          target.videoEntity.object3D.scale.set(
             0.001,
             0.001,
             0.001
