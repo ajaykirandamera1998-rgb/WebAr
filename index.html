@@ -12,6 +12,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <link
     href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Fredoka:wght@500;600&display=swap"
     rel="stylesheet"
@@ -59,7 +60,6 @@
           ctx.closePath();
         }
 
-        /* Cream outer card with soft shadow */
         ctx.save();
         ctx.shadowColor = "rgba(36, 26, 20, 0.35)";
         ctx.shadowBlur = canvas.width * 0.025;
@@ -77,7 +77,6 @@
         ctx.fill();
         ctx.restore();
 
-        /* Outer black outline */
         roundedRectPath(
           0,
           0,
@@ -90,7 +89,6 @@
         ctx.strokeStyle = "#241A14";
         ctx.stroke();
 
-        /* Transparent video cutout */
         ctx.save();
         ctx.globalCompositeOperation = "destination-out";
 
@@ -105,7 +103,6 @@
         ctx.fill();
         ctx.restore();
 
-        /* Inner black outline */
         roundedRectPath(
           mx,
           my,
@@ -132,7 +129,6 @@
         });
 
         const mesh = new THREE.Mesh(geometry, material);
-
         mesh.renderOrder = 0;
 
         this.el.setObject3D("mesh", mesh);
@@ -156,10 +152,6 @@
       touch-action: manipulation;
     }
 
-    /*
-      MindAR dynamically creates its own camera video and tracking canvas.
-      These styles keep them full-screen and behind the AR scene.
-    */
     video.mindar-video {
       position: fixed !important;
       inset: 0 !important;
@@ -183,10 +175,6 @@
       pointer-events: none !important;
     }
 
-    <div id="venue-label">
-  90's Cafe, Khammam
-</div>
-    
     a-scene {
       position: fixed !important;
       inset: 0 !important;
@@ -453,51 +441,61 @@
     /* ------------------------------------------------------------- */
 
     #loop-gif {
-  position: fixed !important;
-  top: 18px;
-  left: 18px;
+      position: fixed !important;
+      top: 18px;
+      left: 18px;
 
-  width: 18vw !important;
-  max-width: 115px;
-  min-width: 62px;
+      width: 18vw !important;
+      max-width: 115px;
+      min-width: 62px;
 
-  height: auto !important;
+      height: auto !important;
 
-  transform: none;
+      transform: none;
 
-  z-index: 40;
-  pointer-events: none;
+      z-index: 40;
+      pointer-events: none;
 
-  opacity: 0;
-  clip-path: circle(0% at 50% 50%);
+      opacity: 0;
+      -webkit-clip-path: circle(0% at 50% 50%);
+      clip-path: circle(0% at 50% 50%);
 
-  border: 3px solid #241a14;
-  border-radius: 14px;
-  background: #f7efd9;
-  box-shadow: 3px 3px 0 #241a14;
-}
+      border: 3px solid #241a14;
+      border-radius: 14px;
+      background: #f7efd9;
+      box-shadow: 3px 3px 0 #241a14;
+    }
+
+    /* ------------------------------------------------------------- */
+    /* Bottom-right venue label                                      */
+    /* ------------------------------------------------------------- */
 
     #venue-label {
-  position: fixed;
-  right: 14px;
-  bottom: 12px;
-  z-index: 90;
+      position: fixed;
+      right: 14px;
+      bottom: 12px;
+      z-index: 90;
 
-  color: #ffffff;
+      padding: 6px 11px;
 
-  font-family: "Fredoka", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+      border: 2px solid rgba(247, 239, 217, 0.85);
+      border-radius: 999px;
 
-  text-shadow: 2px 2px 3px #000;
-  pointer-events: none;
-}
-    
+      background: rgba(36, 26, 20, 0.78);
+      color: #f7efd9;
+
+      font-family: "Fredoka", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+
+      white-space: nowrap;
+      pointer-events: none;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Entry screen -->
   <div id="entry-screen">
     <div id="entry-sunburst"></div>
 
@@ -517,7 +515,6 @@
     </button>
   </div>
 
-  <!-- Scan interface -->
   <div id="scan-hud">
     <div id="scan-frame">
       <div class="corner tl"></div>
@@ -537,7 +534,11 @@
 
   <img id="loop-gif" src="" alt="" />
 
-  <!-- MindAR Scene -->
+  <!-- New transparent venue label -->
+  <div id="venue-label">
+    90's Cafe, Khammam
+  </div>
+
   <a-scene
     id="ar-scene"
     mindar-image="
@@ -560,138 +561,18 @@
     embedded
   >
     <a-assets timeout="20000">
-      <!-- 0: Brahmanandam -->
-      <video
-        id="video-0"
-        src="./video/Brahmanandam.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 1: Ali -->
-      <video
-        id="video-1"
-        src="./video/ali.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 2: Venu Madhav -->
-      <video
-        id="video-2"
-        src="./video/venumadhav.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 3: Jaya Prakash Reddy -->
-      <video
-        id="video-3"
-        src="./video/jayaprakesh.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 4: Babu Mohan -->
-      <video
-        id="video-4"
-        src="./video/babumohan.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 5: Ms Narayana -->
-      <video
-        id="video-5"
-        src="./video/msnarayana.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 6: Krishna Bhagavan -->
-      <video
-        id="video-6"
-        src="./video/krishnabagavan.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 7: Sunil -->
-      <video
-        id="video-7"
-        src="./video/sunil.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 8: Venala Kishore -->
-      <video
-        id="video-8"
-        src="./video/venalakishor.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 9: Sathya -->
-      <video
-        id="video-9"
-        src="./video/sathya.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 10: Sapthagiri -->
-      <video
-        id="video-10"
-        src="./video/Sapthagiri.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
-      <!-- 11: Priyadarshi -->
-      <video
-        id="video-11"
-        src="./video/priyadarshi.mp4"
-        preload="auto"
-        loop
-        crossorigin="anonymous"
-        playsinline
-        webkit-playsinline
-        muted
-      ></video>
+      <video id="video-0" src="./video/Brahmanandam.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-1" src="./video/ali.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-2" src="./video/venumadhav.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-3" src="./video/jayaprakesh.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-4" src="./video/babumohan.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-5" src="./video/msnarayana.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-6" src="./video/krishnabagavan.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-7" src="./video/sunil.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-8" src="./video/venalakishor.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-9" src="./video/sathya.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-10" src="./video/Sapthagiri.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="video-11" src="./video/priyadarshi.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
     </a-assets>
 
     <a-camera
@@ -702,18 +583,10 @@
       cursor="fuse: false; rayOrigin: mouse"
     ></a-camera>
 
-    <!-- 0: Brahmanandam -->
-    <a-entity
-      id="target-0"
-      mindar-image-target="targetIndex: 0"
-    >
+    <a-entity id="target-0" mindar-image-target="targetIndex: 0">
       <a-entity
         id="comic-frame-0"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -724,22 +597,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 1: Ali -->
-    <a-entity
-      id="target-1"
-      mindar-image-target="targetIndex: 1"
-    >
+    <a-entity id="target-1" mindar-image-target="targetIndex: 1">
       <a-entity
         id="comic-frame-1"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -750,22 +614,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 2: Venu Madhav -->
-    <a-entity
-      id="target-2"
-      mindar-image-target="targetIndex: 2"
-    >
+    <a-entity id="target-2" mindar-image-target="targetIndex: 2">
       <a-entity
         id="comic-frame-2"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -776,22 +631,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 3: Jaya Prakash Reddy -->
-    <a-entity
-      id="target-3"
-      mindar-image-target="targetIndex: 3"
-    >
+    <a-entity id="target-3" mindar-image-target="targetIndex: 3">
       <a-entity
         id="comic-frame-3"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -802,22 +648,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 4: Babu Mohan -->
-    <a-entity
-      id="target-4"
-      mindar-image-target="targetIndex: 4"
-    >
+    <a-entity id="target-4" mindar-image-target="targetIndex: 4">
       <a-entity
         id="comic-frame-4"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -828,22 +665,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 5: Ms Narayana -->
-    <a-entity
-      id="target-5"
-      mindar-image-target="targetIndex: 5"
-    >
+    <a-entity id="target-5" mindar-image-target="targetIndex: 5">
       <a-entity
         id="comic-frame-5"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -854,22 +682,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 6: Krishna Bhagavan -->
-    <a-entity
-      id="target-6"
-      mindar-image-target="targetIndex: 6"
-    >
+    <a-entity id="target-6" mindar-image-target="targetIndex: 6">
       <a-entity
         id="comic-frame-6"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -880,22 +699,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 7: Sunil -->
-    <a-entity
-      id="target-7"
-      mindar-image-target="targetIndex: 7"
-    >
+    <a-entity id="target-7" mindar-image-target="targetIndex: 7">
       <a-entity
         id="comic-frame-7"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -906,22 +716,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 8: Venala Kishore -->
-    <a-entity
-      id="target-8"
-      mindar-image-target="targetIndex: 8"
-    >
+    <a-entity id="target-8" mindar-image-target="targetIndex: 8">
       <a-entity
         id="comic-frame-8"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -932,22 +733,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 9: Sathya -->
-    <a-entity
-      id="target-9"
-      mindar-image-target="targetIndex: 9"
-    >
+    <a-entity id="target-9" mindar-image-target="targetIndex: 9">
       <a-entity
         id="comic-frame-9"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -958,22 +750,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 10: Sapthagiri -->
-    <a-entity
-      id="target-10"
-      mindar-image-target="targetIndex: 10"
-    >
+    <a-entity id="target-10" mindar-image-target="targetIndex: 10">
       <a-entity
         id="comic-frame-10"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -984,22 +767,13 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
 
-    <!-- 11: Priyadarshi -->
-    <a-entity
-      id="target-11"
-      mindar-image-target="targetIndex: 11"
-    >
+    <a-entity id="target-11" mindar-image-target="targetIndex: 11">
       <a-entity
         id="comic-frame-11"
-        comic-frame="
-          innerWidth: 1;
-          innerHeight: 0.55;
-          borderScale: 1.14;
-        "
+        comic-frame="innerWidth: 1; innerHeight: 0.55; borderScale: 1.14"
         position="0 0 -0.015"
       ></a-entity>
 
@@ -1010,7 +784,6 @@
         width="1"
         height="0.55"
         position="0 0 0"
-        rotation="0 0 0"
       ></a-video>
     </a-entity>
   </a-scene>
@@ -1027,9 +800,6 @@
     const ambientLayer = document.querySelector("#ambient-layer");
     const loopGifEl = document.querySelector("#loop-gif");
 
-    // One entry per comedian. Edit content.json-style config in ROSTER
-    // below to add/rename/swap comedians -- everything else (listeners,
-    // reveal animation, gif loop) is driven off this array.
     const ROSTER = [
       { index: 0, name: "Brahmanandam" },
       { index: 1, name: "Ali" },
@@ -1055,11 +825,7 @@
     }));
 
     let hasStartedAR = false;
-    let activeIndex = null; // which comedian (if any) is currently locked on
-
-    /* ------------------------------------------------------------- */
-    /* Web Audio UI sounds                                           */
-    /* ------------------------------------------------------------- */
+    let activeIndex = null;
 
     let audioCtx = null;
 
@@ -1087,6 +853,7 @@
       const gain = ctx.createGain();
 
       oscillator.type = type;
+
       oscillator.frequency.setValueAtTime(
         freq,
         ctx.currentTime
@@ -1141,10 +908,6 @@
       });
     }
 
-    /* ------------------------------------------------------------- */
-    /* Entry screen animation                                        */
-    /* ------------------------------------------------------------- */
-
     gsap.set(
       "#entry-title, #entry-subtitle, #entry-hint, #entry-btn",
       { opacity: 0 }
@@ -1197,10 +960,6 @@
         0.75
       );
 
-    /* ------------------------------------------------------------- */
-    /* MindAR events                                                 */
-    /* ------------------------------------------------------------- */
-
     sceneEl.addEventListener("arReady", () => {
       console.log("MEMEVERSE: MindAR is ready.");
       errorToast.classList.remove("visible");
@@ -1215,10 +974,6 @@
       errorToast.classList.add("visible");
     });
 
-    /* ------------------------------------------------------------- */
-    /* Start AR after the user gesture                               */
-    /* ------------------------------------------------------------- */
-
     entryBtn.addEventListener("click", async () => {
       try {
         const ctx = getAudioCtx();
@@ -1229,39 +984,28 @@
 
         playTapSound();
 
-        /*
-          Unlock audio permission for ALL 12 comedian clips at once.
-          Each briefly "plays" (silently, still muted=false but paused
-          again immediately) during this one tap -- browsers count each
-          successful play() as that element being user-activated, so
-          later play() calls from targetFound are allowed to have sound
-          too, without needing a fresh tap per comedian.
-        */
         for (const t of targets) {
-          if (!t.video) continue;
+          if (!t.video) {
+            continue;
+          }
+
           t.video.muted = false;
+
           try {
             await t.video.play();
             t.video.pause();
             t.video.currentTime = 0;
           } catch (videoError) {
             console.warn(
-              `MEMEVERSE: Audio unlock blocked for "${t.name}", will retry on target found.`,
+              `MEMEVERSE: Audio unlock blocked for "${t.name}".`,
               videoError
             );
           }
         }
 
-        /*
-          MindAR normally begins automatically after scene initialization.
-          This starts it only if it has not begun yet.
-        */
         const mindarSystem = sceneEl.systems["mindar-image-system"];
 
-        if (
-          mindarSystem &&
-          !hasStartedAR
-        ) {
+        if (mindarSystem && !hasStartedAR) {
           hasStartedAR = true;
 
           try {
@@ -1298,10 +1042,6 @@
         errorToast.classList.add("visible");
       }
     });
-
-    /* ------------------------------------------------------------- */
-    /* Target reveal and hide animation                              */
-    /* ------------------------------------------------------------- */
 
     function revealSequence(t) {
       if (t.frameEntity && t.frameEntity.object3D) {
@@ -1380,24 +1120,22 @@
       stopGifLoop();
     }
 
-    // One pair of listeners per comedian. Only ONE comedian is treated as
-    // "active" at a time (activeIndex) -- if two targets were somehow
-    // found in the same frame (unlikely on a single wall photo, but
-    // possible with a wide-angle lens catching two faces), the first one
-    // found wins and a second targetFound is ignored until the first is
-    // lost. This avoids two videos/sounds firing simultaneously.
     targets.forEach((t) => {
       if (!t.targetEntity) {
-        console.warn(`MEMEVERSE: missing #target-${t.index} in the DOM (${t.name}) - check the HTML.`);
+        console.warn(
+          `MEMEVERSE: Missing target ${t.index}: ${t.name}`
+        );
         return;
       }
 
       t.targetEntity.addEventListener("targetFound", async () => {
         if (activeIndex !== null && activeIndex !== t.index) {
-          return; // another comedian is already active - ignore
+          return;
         }
 
-        console.log(`MEMEVERSE: Target found - ${t.name} (index ${t.index}).`);
+        console.log(
+          `MEMEVERSE: Target found - ${t.name} (index ${t.index}).`
+        );
 
         activeIndex = t.index;
 
@@ -1406,10 +1144,14 @@
 
         if (t.video) {
           t.video.currentTime = 0;
+
           try {
             await t.video.play();
           } catch (error) {
-            console.warn(`MEMEVERSE: Playback blocked for "${t.name}":`, error);
+            console.warn(
+              `MEMEVERSE: Playback blocked for "${t.name}":`,
+              error
+            );
           }
         }
 
@@ -1418,13 +1160,19 @@
       });
 
       t.targetEntity.addEventListener("targetLost", () => {
-        if (activeIndex !== t.index) return; // wasn't the active one - ignore
+        if (activeIndex !== t.index) {
+          return;
+        }
 
-        console.log(`MEMEVERSE: Target lost - ${t.name} (index ${t.index}).`);
+        console.log(
+          `MEMEVERSE: Target lost - ${t.name} (index ${t.index}).`
+        );
 
         activeIndex = null;
 
-        if (t.video) t.video.pause();
+        if (t.video) {
+          t.video.pause();
+        }
 
         hideSequence(t);
 
@@ -1435,13 +1183,6 @@
       });
     });
 
-    /* ------------------------------------------------------------- */
-    /* GIF loop                                                      */
-    /* ------------------------------------------------------------- */
-
-    // Default GIF set shared by every comedian unless overridden below.
-    // To give a specific comedian their own GIFs, add/replace that
-    // targetIndex's array, e.g. GIF_SETS[3] = ["Gifs/special-1.GIF", ...].
     const DEFAULT_GIFS = [
       "Gifs/1.gif",
       "Gifs/2.gif",
@@ -1453,6 +1194,7 @@
     ];
 
     const GIF_SETS = {};
+
     targets.forEach((t) => {
       GIF_SETS[t.index] = DEFAULT_GIFS;
     });
@@ -1466,6 +1208,13 @@
       r: 0
     };
 
+    function setGifClip(percent) {
+      const clipValue = `circle(${percent}% at 50% 50%)`;
+
+      loopGifEl.style.clipPath = clipValue;
+      loopGifEl.style.webkitClipPath = clipValue;
+    }
+
     loopGifEl.addEventListener("error", () => {
       console.warn(
         `MEMEVERSE: GIF failed to load: ${loopGifEl.src}`
@@ -1476,8 +1225,7 @@
       irisProxy.r = 0;
 
       loopGifEl.style.opacity = "0";
-      loopGifEl.style.clipPath =
-        "circle(0% at 50% 50%)";
+      setGifClip(0);
     });
 
     function showNextGifFrame(gifList) {
@@ -1502,8 +1250,7 @@
         ease: "power2.out",
 
         onUpdate: () => {
-          loopGifEl.style.clipPath =
-            `circle(${irisProxy.r}% at 50% 50%)`;
+          setGifClip(irisProxy.r);
         }
       });
     }
@@ -1542,8 +1289,7 @@
         ease: "power1.in",
 
         onUpdate: () => {
-          loopGifEl.style.clipPath =
-            `circle(${irisProxy.r}% at 50% 50%)`;
+          setGifClip(irisProxy.r);
         },
 
         onComplete: () => {
@@ -1551,10 +1297,6 @@
         }
       });
     }
-
-    /* ------------------------------------------------------------- */
-    /* Ambient particles                                             */
-    /* ------------------------------------------------------------- */
 
     let ambientTimer = null;
 
@@ -1626,17 +1368,25 @@
       }
     }
 
-    /* Start AR visuals hidden until target is found */
     sceneEl.addEventListener("loaded", () => {
       targets.forEach((t) => {
         if (t.frameEntity && t.frameEntity.object3D) {
-          t.frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
+          t.frameEntity.object3D.scale.set(
+            0.001,
+            0.001,
+            0.001
+          );
         }
+
         if (t.videoEntity && t.videoEntity.object3D) {
-          t.videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
+          t.videoEntity.object3D.scale.set(
+            0.001,
+            0.001,
+            0.001
+          );
         }
       });
     });
   </script>
 </body>
-</html>  
+</html>
