@@ -357,12 +357,20 @@
       box-shadow: 3px 3px 0 #241a14;
     }
 
-    /* -------- Brand watermark: bottom-right, transparent background -- */
-    #brand-watermark {
+    /* -------- Bottom Right Watermark & Sound Container -------- */
+    #bottom-right-container {
       position: fixed;
       right: 16px;
       bottom: 14px;
       z-index: 42;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    #brand-watermark {
       background: transparent;
       color: #F7EFD9;
       font-family: "Fredoka", sans-serif;
@@ -370,8 +378,63 @@
       font-size: 13px;
       letter-spacing: 0.4px;
       text-shadow: 0 1px 3px rgba(0,0,0,0.65), 0 0 8px rgba(0,0,0,0.35);
-      pointer-events: none;
       white-space: nowrap;
+    }
+
+    /* Animated Sound Toggle Button */
+    #audio-toggle-btn {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 2px solid #241A14;
+      border-radius: 999px;
+      background: #e8a62e;
+      color: #241A14;
+      font-family: "Fredoka", sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 2px 2px 0 #241A14;
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+
+    #audio-toggle-btn:active {
+      transform: scale(0.94);
+    }
+
+    #audio-toggle-btn.muted {
+      background: #c1432e;
+      color: #F7EFD9;
+    }
+
+    .audio-waves {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+    }
+
+    .audio-wave-bar {
+      width: 3px;
+      height: 100%;
+      background-color: currentColor;
+      border-radius: 2px;
+    }
+
+    #audio-toggle-btn.playing .bar1 { animation: sound-wave 0.6s ease-in-out infinite alternate; }
+    #audio-toggle-btn.playing .bar2 { animation: sound-wave 0.8s ease-in-out 0.2s infinite alternate; }
+    #audio-toggle-btn.playing .bar3 { animation: sound-wave 0.5s ease-in-out 0.4s infinite alternate; }
+
+    #audio-toggle-btn.muted .audio-wave-bar {
+      height: 3px !important;
+      animation: none !important;
+    }
+
+    @keyframes sound-wave {
+      0% { height: 20%; }
+      100% { height: 100%; }
     }
   </style>
 </head>
@@ -398,7 +461,18 @@
   <div id="ambient-layer"></div>
   <div id="ar-error-toast"></div>
   <img id="loop-gif" src="" alt="" />
-  <div id="brand-watermark">90's Cafe, Khammam</div>
+  
+  <div id="bottom-right-container">
+    <button id="audio-toggle-btn" class="playing" type="button">
+      <div class="audio-waves">
+        <div class="audio-wave-bar bar1"></div>
+        <div class="audio-wave-bar bar2"></div>
+        <div class="audio-wave-bar bar3"></div>
+      </div>
+      <span id="audio-btn-text">Sound ON</span>
+    </button>
+    <div id="brand-watermark">90's Cafe, Khammam</div>
+  </div>
 
   <a-scene
     id="ar-scene"
@@ -508,6 +582,8 @@
     const errorToast = document.querySelector("#ar-error-toast");
     const ambientLayer = document.querySelector("#ambient-layer");
     const loopGifEl = document.querySelector("#loop-gif");
+    const audioToggleBtn = document.querySelector("#audio-toggle-btn");
+    const audioBtnText = document.querySelector("#audio-btn-text");
 
     const ROSTER = [
       { index: 0, name: "Brahmanandam", path: "./video/Brahmanandam.mp4" },
@@ -537,302 +613,3 @@
     let hasStartedAR = false;
     let activeIndex = null;
     let audioCtx = null;
-
-    function getAudioCtx() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return audioCtx;
-    }
-
-    function playTone({ freq = 880, endFreq = null, duration = 0.2, type = "triangle", volume = 0.25 }) {
-      const ctx = getAudioCtx();
-      const oscillator = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      oscillator.type = type;
-      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-
-      if (endFreq) {
-        oscillator.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration * 0.6);
-      }
-
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-
-      oscillator.connect(gain);
-      gain.connect(ctx.destination);
-
-      oscillator.start();
-      oscillator.stop(ctx.currentTime + duration + 0.05);
-    }
-
-    function playTapSound() {
-      playTone({ freq: 420, endFreq: 620, duration: 0.15, type: "sine", volume: 0.2 });
-    }
-
-    function playLockOnChime() {
-      playTone({ freq: 700, endFreq: 1100, duration: 0.28, type: "triangle", volume: 0.28 });
-    }
-
-    gsap.set("#entry-title, #entry-subtitle, #entry-hint, #entry-btn", { opacity: 0 });
-    gsap.set("#entry-title", { scale: 0.7 });
-
-    gsap.to("#entry-sunburst", { rotate: 360, duration: 50, repeat: -1, ease: "none" });
-
-    gsap.timeline()
-      .to("#entry-title", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.1)
-      .to("#entry-subtitle", { opacity: 1, duration: 0.4 }, 0.4)
-      .to("#entry-hint", { opacity: 1, duration: 0.4 }, 0.6)
-      .to("#entry-btn", { opacity: 1, duration: 0.4 }, 0.75);
-
-    sceneEl.addEventListener("arReady", () => {
-      console.log("MEMEVERSE: MindAR is ready.");
-      errorToast.classList.remove("visible");
-    });
-
-    sceneEl.addEventListener("arError", (event) => {
-      console.error("MEMEVERSE: MindAR camera error:", event.detail);
-      errorToast.textContent = "Camera could not start. Allow camera permission and open this site using HTTPS or localhost.";
-      errorToast.classList.add("visible");
-    });
-
-    entryBtn.addEventListener("click", async () => {
-      try {
-        const ctx = getAudioCtx();
-        if (ctx.state === "suspended") {
-          await ctx.resume();
-        }
-        playTapSound();
-
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        if (mindarSystem && !hasStartedAR) {
-          hasStartedAR = true;
-          await mindarSystem.start();
-        }
-
-        gsap.to("#entry-screen", {
-          opacity: 0,
-          scale: 1.05,
-          duration: 0.4,
-          ease: "power1.in",
-          onComplete: () => {
-            entryScreen.classList.add("hidden");
-            if (activeIndex === null) {
-              scanHud.classList.add("visible");
-              startAmbientParticles();
-            }
-          }
-        });
-      } catch (error) {
-        console.error("MEMEVERSE: Start error:", error);
-        errorToast.textContent = "Could not open the camera. Please allow camera permission, then reload.";
-        errorToast.classList.add("visible");
-      }
-    });
-
-    function revealSequence(t) {
-      if (t.frameEntity && t.frameEntity.object3D) {
-        gsap.killTweensOf(t.frameEntity.object3D.scale);
-        gsap.fromTo(
-          t.frameEntity.object3D.scale,
-          { x: 0.001, y: 0.001, z: 0.001 },
-          { x: 1, y: 1, z: 1, duration: 0.45, ease: "elastic.out(1, 0.6)" }
-        );
-      }
-
-      if (t.videoEntity && t.videoEntity.object3D) {
-        gsap.killTweensOf(t.videoEntity.object3D.scale);
-        gsap.fromTo(
-          t.videoEntity.object3D.scale,
-          { x: 0.001, y: 0.001, z: 0.001 },
-          { x: 1, y: 1, z: 1, delay: 0.1, duration: 0.45, ease: "elastic.out(1, 0.6)" }
-        );
-      }
-
-      gsap.delayedCall(0.22, () => {
-        if (activeIndex === t.index) {
-          startGifLoop(t.index);
-        }
-      });
-    }
-
-    function hideSequence(t) {
-      if (t.frameEntity && t.frameEntity.object3D) {
-        gsap.killTweensOf(t.frameEntity.object3D.scale);
-        gsap.to(t.frameEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
-      }
-
-      if (t.videoEntity && t.videoEntity.object3D) {
-        gsap.killTweensOf(t.videoEntity.object3D.scale);
-        gsap.to(t.videoEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
-      }
-
-      stopGifLoop();
-    }
-
-    targets.forEach((t) => {
-      if (!t.targetEntity) return;
-
-      t.targetEntity.addEventListener("targetFound", async () => {
-        if (activeIndex !== null && activeIndex !== t.index) return;
-
-        activeIndex = t.index;
-        scanHud.classList.remove("visible");
-        stopAmbientParticles();
-
-        if (t.video) {
-          if (!t.video.getAttribute("src")) {
-            t.video.setAttribute("src", t.path);
-            t.video.load();
-          }
-          t.video.currentTime = 0;
-          try {
-            await t.video.play();
-          } catch (error) {
-            console.warn(`MEMEVERSE: Playback blocked for "${t.name}":`, error);
-          }
-        }
-
-        playLockOnChime();
-        revealSequence(t);
-      });
-
-      t.targetEntity.addEventListener("targetLost", () => {
-        if (activeIndex !== t.index) return;
-
-        activeIndex = null;
-
-        if (t.video) {
-          t.video.pause();
-        }
-
-        hideSequence(t);
-
-        if (entryScreen.classList.contains("hidden")) {
-          scanHud.classList.add("visible");
-          startAmbientParticles();
-        }
-      });
-    });
-
-    const DEFAULT_GIFS = ["Gifs/1.gif", "Gifs/2.gif", "Gifs/3.gif", "Gifs/4.gif", "Gifs/5.gif", "Gifs/6.gif", "Gifs/7.gif"];
-    const GIF_SETS = {};
-    targets.forEach((t) => { GIF_SETS[t.index] = DEFAULT_GIFS; });
-
-    const GIF_FRAME_MS = 500;
-    let gifTimer = null;
-    let gifIndex = 0;
-    const irisProxy = { r: 0 };
-
-    loopGifEl.addEventListener("error", () => {
-      gsap.killTweensOf(irisProxy);
-      irisProxy.r = 0;
-      loopGifEl.style.opacity = "0";
-      loopGifEl.style.clipPath = "circle(0% at 50% 50%)";
-    });
-
-    function showNextGifFrame(gifList) {
-      if (!gifList || gifList.length === 0) return;
-
-      const source = gifList[gifIndex % gifList.length];
-      gifIndex += 1;
-
-      loopGifEl.src = source;
-      loopGifEl.style.opacity = "1";
-
-      gsap.killTweensOf(irisProxy);
-      irisProxy.r = 0;
-
-      gsap.to(irisProxy, {
-        r: 75,
-        duration: 0.3,
-        ease: "power2.out",
-        onUpdate: () => {
-          loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
-        }
-      });
-    }
-
-    function startGifLoop(index) {
-      const gifList = GIF_SETS[index];
-      if (!gifList || gifList.length === 0) return;
-
-      stopGifLoop();
-      gifIndex = 0;
-      showNextGifFrame(gifList);
-
-      gifTimer = window.setInterval(() => {
-        if (activeIndex === index) {
-          showNextGifFrame(gifList);
-        }
-      }, GIF_FRAME_MS);
-    }
-
-    function stopGifLoop() {
-      if (gifTimer) {
-        window.clearInterval(gifTimer);
-        gifTimer = null;
-      }
-
-      gsap.killTweensOf(irisProxy);
-      gsap.to(irisProxy, {
-        r: 0,
-        duration: 0.2,
-        ease: "power1.in",
-        onUpdate: () => {
-          loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
-        },
-        onComplete: () => {
-          loopGifEl.style.opacity = "0";
-        }
-      });
-    }
-
-    let ambientTimer = null;
-
-    function spawnAmbientDot() {
-      const dot = document.createElement("div");
-      dot.className = "ambient-dot";
-
-      const x = window.innerWidth * (0.3 + Math.random() * 0.4);
-      const startY = window.innerHeight * 0.75;
-
-      dot.style.left = `${x}px`;
-      dot.style.top = `${startY}px`;
-
-      ambientLayer.appendChild(dot);
-
-      gsap.timeline({ onComplete: () => dot.remove() })
-        .to(dot, { opacity: 0.6, duration: 0.4 }, 0)
-        .to(dot, { y: -180 - Math.random() * 100, x: `+=${(Math.random() - 0.5) * 60}`, duration: 2.4, ease: "power1.out" }, 0)
-        .to(dot, { opacity: 0, duration: 0.5 }, 1.9);
-    }
-
-    function startAmbientParticles() {
-      if (ambientTimer) return;
-      spawnAmbientDot();
-      ambientTimer = window.setInterval(() => spawnAmbientDot(), 700);
-    }
-
-    function stopAmbientParticles() {
-      if (ambientTimer) {
-        window.clearInterval(ambientTimer);
-        ambientTimer = null;
-      }
-    }
-
-    sceneEl.addEventListener("loaded", () => {
-      targets.forEach((t) => {
-        if (t.frameEntity && t.frameEntity.object3D) {
-          t.frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
-        }
-        if (t.videoEntity && t.videoEntity.object3D) {
-          t.videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
-        }
-      });
-    });
-  </script>
-</body>
-</html>
