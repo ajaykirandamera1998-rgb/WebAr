@@ -356,6 +356,23 @@
       background: #f7efd9;
       box-shadow: 3px 3px 0 #241a14;
     }
+
+    /* -------- Brand watermark: bottom-right, transparent background -- */
+    #brand-watermark {
+      position: fixed;
+      right: 16px;
+      bottom: 14px;
+      z-index: 42;
+      background: transparent;
+      color: #F7EFD9;
+      font-family: "Fredoka", sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.65), 0 0 8px rgba(0,0,0,0.35);
+      pointer-events: none;
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -381,6 +398,7 @@
   <div id="ambient-layer"></div>
   <div id="ar-error-toast"></div>
   <img id="loop-gif" src="" alt="" />
+  <div id="brand-watermark">90's Cafe, Khammam</div>
 
   <a-scene
     id="ar-scene"
