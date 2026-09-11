@@ -357,7 +357,6 @@
       box-shadow: 3px 3px 0 #241a14;
     }
 
-    /* -------- Bottom Right Watermark & Sound Container -------- */
     #bottom-right-container {
       position: fixed;
       right: 16px;
@@ -381,7 +380,6 @@
       white-space: nowrap;
     }
 
-    /* Animated Sound Toggle Button */
     #audio-toggle-btn {
       pointer-events: auto;
       display: flex;
@@ -496,7 +494,7 @@
     device-orientation-permission-ui="enabled: false"
     embedded
   >
-    <a-assets timeout="1000">
+    <a-assets timeout="10000">
       <video id="video-0" preload="none" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
       <video id="video-1" preload="none" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
       <video id="video-2" preload="none" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -613,3 +611,352 @@
     let hasStartedAR = false;
     let activeIndex = null;
     let audioCtx = null;
+    let isUserAudioEnabled = true;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function setAudioState(enabled) {
+      isUserAudioEnabled = enabled;
+      if (enabled) {
+        audioToggleBtn.classList.remove("muted");
+        audioToggleBtn.classList.add("playing");
+        audioBtnText.textContent = "Sound ON";
+      } else {
+        audioToggleBtn.classList.remove("playing");
+        audioToggleBtn.classList.add("muted");
+        audioBtnText.textContent = "Tap for Sound";
+      }
+
+      targets.forEach(t => {
+        if (t.video) {
+          t.video.muted = !enabled;
+        }
+      });
+    }
+
+    audioToggleBtn.addEventListener("click", async () => {
+      const ctx = getAudioCtx();
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
+
+      setAudioState(!isUserAudioEnabled);
+
+      if (activeIndex !== null && targets[activeIndex] && targets[activeIndex].video) {
+        const activeVid = targets[activeIndex].video;
+        if (isUserAudioEnabled) {
+          activeVid.muted = false;
+          activeVid.play().catch(err => console.warn("Manual audio unlock failed:", err));
+        }
+      }
+    });
+
+    function playTone({ freq = 880, endFreq = null, duration = 0.2, type = "triangle", volume = 0.25 }) {
+      if (!isUserAudioEnabled) return;
+      const ctx = getAudioCtx();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+
+      if (endFreq) {
+        oscillator.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration * 0.6);
+      }
+
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + duration + 0.05);
+    }
+
+    function playTapSound() {
+      playTone({ freq: 420, endFreq: 620, duration: 0.15, type: "sine", volume: 0.2 });
+    }
+
+    function playLockOnChime() {
+      playTone({ freq: 700, endFreq: 1100, duration: 0.28, type: "triangle", volume: 0.28 });
+    }
+
+    gsap.set("#entry-title, #entry-subtitle, #entry-hint, #entry-btn", { opacity: 0 });
+    gsap.set("#entry-title", { scale: 0.7 });
+
+    gsap.to("#entry-sunburst", { rotate: 360, duration: 50, repeat: -1, ease: "none" });
+
+    gsap.timeline()
+      .to("#entry-title", { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.1)
+      .to("#entry-subtitle", { opacity: 1, duration: 0.4 }, 0.4)
+      .to("#entry-hint", { opacity: 1, duration: 0.4 }, 0.6)
+      .to("#entry-btn", { opacity: 1, duration: 0.4 }, 0.75);
+
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MEMEVERSE: MindAR is ready.");
+      errorToast.classList.remove("visible");
+    });
+
+    sceneEl.addEventListener("arError", (event) => {
+      console.error("MEMEVERSE: MindAR camera error:", event.detail);
+      errorToast.textContent = "Camera could not start. Allow camera permission and open this site using HTTPS or localhost.";
+      errorToast.classList.add("visible");
+    });
+
+    entryBtn.addEventListener("click", async () => {
+      try {
+        const ctx = getAudioCtx();
+        if (ctx.state === "suspended") {
+          ctx.resume();
+        }
+        playTapSound();
+
+        const mindarSystem = sceneEl.systems && sceneEl.systems["mindar-image-system"];
+        if (mindarSystem && !hasStartedAR) {
+          hasStartedAR = true;
+          await mindarSystem.start();
+        } else if (!hasStartedAR) {
+          hasStartedAR = true;
+          sceneEl.play();
+        }
+
+        gsap.to("#entry-screen", {
+          opacity: 0,
+          scale: 1.05,
+          duration: 0.4,
+          ease: "power1.in",
+          onComplete: () => {
+            entryScreen.classList.add("hidden");
+            if (activeIndex === null) {
+              scanHud.classList.add("visible");
+              startAmbientParticles();
+            }
+          }
+        });
+      } catch (error) {
+        console.error("MEMEVERSE: Start error:", error);
+        errorToast.textContent = "Could not open the camera. Please allow camera permission, then reload.";
+        errorToast.classList.add("visible");
+      }
+    });
+
+    function revealSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
+        gsap.fromTo(
+          t.frameEntity.object3D.scale,
+          { x: 0.001, y: 0.001, z: 0.001 },
+          { x: 1, y: 1, z: 1, duration: 0.45, ease: "elastic.out(1, 0.6)" }
+        );
+      }
+
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
+        gsap.fromTo(
+          t.videoEntity.object3D.scale,
+          { x: 0.001, y: 0.001, z: 0.001 },
+          { x: 1, y: 1, z: 1, delay: 0.1, duration: 0.45, ease: "elastic.out(1, 0.6)" }
+        );
+      }
+
+      gsap.delayedCall(0.22, () => {
+        if (activeIndex === t.index) {
+          startGifLoop(t.index);
+        }
+      });
+    }
+
+    function hideSequence(t) {
+      if (t.frameEntity && t.frameEntity.object3D) {
+        gsap.killTweensOf(t.frameEntity.object3D.scale);
+        gsap.to(t.frameEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
+      }
+
+      if (t.videoEntity && t.videoEntity.object3D) {
+        gsap.killTweensOf(t.videoEntity.object3D.scale);
+        gsap.to(t.videoEntity.object3D.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.2, ease: "power1.in" });
+      }
+
+      stopGifLoop();
+    }
+
+    targets.forEach((t) => {
+      if (!t.targetEntity) return;
+
+      t.targetEntity.addEventListener("targetFound", async () => {
+        if (activeIndex !== null && activeIndex !== t.index) return;
+
+        activeIndex = t.index;
+        scanHud.classList.remove("visible");
+        stopAmbientParticles();
+
+        if (t.video) {
+          if (!t.video.getAttribute("src")) {
+            t.video.setAttribute("src", t.path);
+            t.video.load();
+          }
+          t.video.currentTime = 0;
+          t.video.muted = !isUserAudioEnabled;
+
+          try {
+            await t.video.play();
+          } catch (error) {
+            console.warn(`MEMEVERSE: Unmuted autoplay blocked for "${t.name}". Falling back to muted playback:`, error);
+            t.video.muted = true;
+            setAudioState(false);
+            try {
+              await t.video.play();
+            } catch (err) {
+              console.error("MEMEVERSE: Muted playback also failed:", err);
+            }
+          }
+        }
+
+        playLockOnChime();
+        revealSequence(t);
+      });
+
+      t.targetEntity.addEventListener("targetLost", () => {
+        if (activeIndex !== t.index) return;
+
+        activeIndex = null;
+
+        if (t.video) {
+          t.video.pause();
+        }
+
+        hideSequence(t);
+
+        if (entryScreen.classList.contains("hidden")) {
+          scanHud.classList.add("visible");
+          startAmbientParticles();
+        }
+      });
+    });
+
+    const DEFAULT_GIFS = ["Gifs/1.gif", "Gifs/2.gif", "Gifs/3.gif", "Gifs/4.gif", "Gifs/5.gif", "Gifs/6.gif", "Gifs/7.gif"];
+    const GIF_SETS = {};
+    targets.forEach((t) => { GIF_SETS[t.index] = DEFAULT_GIFS; });
+
+    const GIF_FRAME_MS = 500;
+    let gifTimer = null;
+    let gifIndex = 0;
+    const irisProxy = { r: 0 };
+
+    loopGifEl.addEventListener("error", () => {
+      gsap.killTweensOf(irisProxy);
+      irisProxy.r = 0;
+      loopGifEl.style.opacity = "0";
+      loopGifEl.style.clipPath = "circle(0% at 50% 50%)";
+    });
+
+    function showNextGifFrame(gifList) {
+      if (!gifList || gifList.length === 0) return;
+
+      const source = gifList[gifIndex % gifList.length];
+      gifIndex += 1;
+
+      loopGifEl.src = source;
+      loopGifEl.style.opacity = "1";
+
+      gsap.killTweensOf(irisProxy);
+      irisProxy.r = 0;
+
+      gsap.to(irisProxy, {
+        r: 75,
+        duration: 0.3,
+        ease: "power2.out",
+        onUpdate: () => {
+          loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
+        }
+      });
+    }
+
+    function startGifLoop(index) {
+      const gifList = GIF_SETS[index];
+      if (!gifList || gifList.length === 0) return;
+
+      stopGifLoop();
+      gifIndex = 0;
+      showNextGifFrame(gifList);
+
+      gifTimer = window.setInterval(() => {
+        if (activeIndex === index) {
+          showNextGifFrame(gifList);
+        }
+      }, GIF_FRAME_MS);
+    }
+
+    function stopGifLoop() {
+      if (gifTimer) {
+        window.clearInterval(gifTimer);
+        gifTimer = null;
+      }
+
+      gsap.killTweensOf(irisProxy);
+      gsap.to(irisProxy, {
+        r: 0,
+        duration: 0.2,
+        ease: "power1.in",
+        onUpdate: () => {
+          loopGifEl.style.clipPath = `circle(${irisProxy.r}% at 50% 50%)`;
+        },
+        onComplete: () => {
+          loopGifEl.style.opacity = "0";
+        }
+      });
+    }
+
+    let ambientTimer = null;
+
+    function spawnAmbientDot() {
+      const dot = document.createElement("div");
+      dot.className = "ambient-dot";
+
+      const x = window.innerWidth * (0.3 + Math.random() * 0.4);
+      const startY = window.innerHeight * 0.75;
+
+      dot.style.left = `${x}px`;
+      dot.style.top = `${startY}px`;
+
+      ambientLayer.appendChild(dot);
+
+      gsap.timeline({ onComplete: () => dot.remove() })
+        .to(dot, { opacity: 0.6, duration: 0.4 }, 0)
+        .to(dot, { y: -180 - Math.random() * 100, x: `+=${(Math.random() - 0.5) * 60}`, duration: 2.4, ease: "power1.out" }, 0)
+        .to(dot, { opacity: 0, duration: 0.5 }, 1.9);
+    }
+
+    function startAmbientParticles() {
+      if (ambientTimer) return;
+      spawnAmbientDot();
+      ambientTimer = window.setInterval(() => spawnAmbientDot(), 700);
+    }
+
+    function stopAmbientParticles() {
+      if (ambientTimer) {
+        window.clearInterval(ambientTimer);
+        ambientTimer = null;
+      }
+    }
+
+    sceneEl.addEventListener("loaded", () => {
+      targets.forEach((t) => {
+        if (t.frameEntity && t.frameEntity.object3D) {
+          t.frameEntity.object3D.scale.set(0.001, 0.001, 0.001);
+        }
+        if (t.videoEntity && t.videoEntity.object3D) {
+          t.videoEntity.object3D.scale.set(0.001, 0.001, 0.001);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
